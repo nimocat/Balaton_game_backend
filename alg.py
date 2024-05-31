@@ -1,5 +1,7 @@
 import random
 import itertools
+import math
+from database import redis_client
 
 # 定义扑克牌，包括大小王
 suits = ['H', 'S', 'D', 'C']  # 红桃, 黑桃, 方块, 梅花
@@ -15,7 +17,7 @@ def dealer_draw():
     return generate_hand(5)
 
 def calculate_score(hand):
-    print(hand)
+    # print(hand)
     joker_ranks = ranks + ['BJ', 'RJ']
 
     def is_flush(hand):
@@ -115,3 +117,36 @@ def calculate_score_without_joker(rank_counts, hand):
         score = 1
 
     return score
+
+def calculate_reward(current_game_id):
+    # 获取当前游戏的得分和奖池金额
+    scores_key = f"{current_game_id}_SCORES"
+    pool_key = f"{current_game_id}_POOL"
+    player_scores = redis_client.zrevrange(scores_key, 0, -1, withscores=True)  # 使用 zrevrange 获取从高到低的分数
+    prize_pool = int(redis_client.get(pool_key) or 0)
+
+    if not player_scores:
+        return {}
+
+    num_players = len(player_scores)
+    top_10_percent_index = math.floor(num_players * 0.1)
+    top_25_percent_index = math.floor(num_players * 0.25)
+
+    rewards = {}
+
+    # 奖池中的50%奖励前10%的玩家
+    top_10_percent_reward = prize_pool * 0.5 / top_10_percent_index if top_10_percent_index > 0 else 0
+
+    # 奖池中35%的奖励前10%-25%的玩家
+    top_10_to_25_percent_reward = prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index) if top_25_percent_index > top_10_percent_index else 0
+
+    for i, (player, score) in enumerate(player_scores):
+        player = player.decode('utf-8')
+        if i < top_10_percent_index:
+            rewards[player] = top_10_percent_reward
+        elif i < top_25_percent_index:
+            rewards[player] = top_10_to_25_percent_reward
+        else:
+            rewards[player] = 0
+
+    return rewards

@@ -1,0 +1,31 @@
+2024-05-31 02:08:58,600 - game_logic - INFO - Game ID: 20240530180858600248 Generated, New Game Start
+2024-05-31 02:09:03,615 - game_logic - INFO - Game ID: b'20240530180858600248' executing
+2024-05-31 02:09:03,616 - game_logic - INFO - Dealer's hand ['C7', 'D2', 'DJ', 'DK', 'D3'] added to game 20240530180858600248
+2024-05-31 02:09:03,617 - game_logic - INFO - Game ID: 20240530180903617786 Generated, New Game Start
+2024-05-31 02:09:08,624 - game_logic - INFO - Game ID: b'20240530180903617786' executing
+2024-05-31 02:09:08,624 - game_logic - INFO - Dealer's hand ['CQ', 'CA', 'CK', 'D2', 'C6'] added to game 20240530180903617786
+2024-05-31 02:09:08,625 - game_logic - INFO - Game ID: 20240530180908625941 Generated, New Game Start
+2024-05-31 02:09:13,632 - game_logic - INFO - Game ID: b'20240530180908625941' executing
+2024-05-31 02:09:13,633 - game_logic - INFO - Dealer's hand ['HQ', 'DT', 'C2', 'S8', 'D2'] added to game 20240530180908625941
+2024-05-31 02:09:13,633 - game_logic - INFO - Game ID: 20240530180913633913 Generated, New Game Start
+2024-05-31 02:09:18,640 - game_logic - INFO - Game ID: b'20240530180913633913' executing
+2024-05-31 02:09:18,640 - game_logic - INFO - Dealer's hand ['H5', 'SQ', 'S7', 'SK', 'D3'] added to game 20240530180913633913
+2024-05-31 02:09:18,641 - game_logic - INFO - Game ID: 20240530180918641488 Generated, New Game Start
+2024-05-31 02:09:23,647 - game_logic - INFO - Game ID: b'20240530180918641488' executing
+2024-05-31 02:09:23,648 - game_logic - INFO - Dealer's hand ['H6', 'D8', 'C4', 'HA', 'H9'] added to game 20240530180918641488
+2024-05-31 02:09:23,649 - game_logic - INFO - Game ID: 20240530180923649435 Generated, New Game Start
+2024-05-31 02:09:28,655 - game_logic - INFO - Game ID: b'20240530180923649435' executing
+2024-05-31 02:09:28,656 - game_logic - INFO - Dealer's hand ['HT', 'C6', 'C5', 'C9', 'S6'] added to game 20240530180923649435
+2024-05-31 02:09:28,657 - game_logic - INFO - Game ID: 20240530180928657119 Generated, New Game Start
+2024-05-31 02:09:33,663 - game_logic - INFO - Game ID: b'20240530180928657119' executing
+2024-05-31 02:09:33,663 - game_logic - INFO - Dealer's hand ['D3', 'RJ', 'C6', 'D2', 'H2'] added to game 20240530180928657119
+2024-05-31 02:09:33,664 - game_logic - INFO - Game ID: 20240530180933664756 Generated, New Game Start
+2024-05-31 02:09:38,670 - game_logic - INFO - Game ID: b'20240530180933664756' executing
+2024-05-31 02:09:38,670 - game_logic - INFO - Dealer's hand ['S3', 'H3', 'SA', 'S4', 'D5'] added to game 20240530180933664756
+2024-05-31 02:09:38,671 - game_logic - INFO - Game ID: 20240530180938671922 Generated, New Game Start
+2024-05-31 02:09:43,677 - game_logic - INFO - Game ID: b'20240530180938671922' executing
+2024-05-31 02:09:43,677 - game_logic - INFO - Dealer's hand ['HJ', 'CK', 'H5', 'S9', 'D3'] added to game 20240530180938671922
+2024-05-31 02:09:43,679 - game_logic - INFO - Game ID: 20240530180943679068 Generated, New Game Start
+2024-05-31 02:09:48,684 - game_logic - INFO - Game ID: b'20240530180943679068' executing
+2024-05-31 02:09:48,685 - game_logic - INFO - Dealer's hand ['DQ', 'RJ', 'S3', 'C6', 'C9'] added to game 20240530180943679068
+2024-05-31 02:09:48,686 - game_logic - INFO - Game ID: 20240530180948686725 Generated, New Game Start
