@@ -6,6 +6,7 @@ import redis
 import math
 import threading
 import logging
+import pandas as pd
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -69,6 +70,68 @@ def load_player_items(player_name: str) -> dict:
 
     return load_player_to_redis(player_name)
 
+def load_game_items_to_redis(file_path: str):
+    # Read the Excel file
+    df = pd.read_excel(file_path)
+    
+    # Iterate over the rows and write to Redis
+    with redis_client.pipeline() as pipe:
+        for index, row in df.iterrows():
+            item_id = row['item_id']
+            item_data = {
+                "type": row['type'],
+                "name": row['name'],
+                "short_description": row['short_description'],
+                "long_description": row['long_description'],
+                "available": row['avaliable']  # Correct the typo in the column name if necessary
+            }
+            pipe.hmset(f"game_item:{item_id}", item_data)
+        pipe.execute()
+    
+    logger.info("Game items loaded into Redis")
+
+def load_shop_to_redis(file_path: str):
+    # Read the Excel file
+    df = pd.read_excel(file_path)
+
+    # Iterate over the rows and write to Redis
+    with redis_client.pipeline() as pipe:
+        for index, row in df.iterrows():
+            item_id = row['item_id']
+            item_data = {
+                "price": int(row['price']),
+                "avaliable": bool(row['avaliable']),
+                "discount": float(row['discount']),
+                "num": int(row['num'])
+            }
+            pipe.hmset(f"shop_item:{item_id}", item_data)
+        pipe.execute()
+
+    logger.info("Shop items loaded into Redis")
+
+def update_player_items_to_mongo(player_name: str):
+    player_key = f"{player_name}_ITEMS"
+
+    # Check if the player exists in Redis
+    if not redis_client.exists(player_key):
+        logger.error(f"Player {player_name} not found in Redis")
+        raise ValueError(f"Player {player_name} not found in Redis")
+
+    # Get player items from Redis
+    player_items = redis_client.hgetall(player_key)
+
+    # Convert Redis data to the appropriate format
+    items = {int(key.decode('utf-8')): int(value.decode('utf-8')) for key, value in player_items.items()}
+
+    # Update the player's items in MongoDB
+    db.players.update_one(
+        {"name": player_name},
+        {"$set": {"items": items}},
+        upsert=True  # This option creates the document if it doesn't exist
+    )
+
+    logger.info(f"Player {player_name}'s items updated in MongoDB")
+
 def load_player_to_redis(player_name: str):
     # 从 MongoDB 中获取玩家信息
     player = db.players.find_one({"name": player_name})
@@ -76,16 +139,24 @@ def load_player_to_redis(player_name: str):
         logger.info(f"Player {player_name} not found in MongoDB")
         raise ValueError(f"Player {player_name} not found in MongoDB")
 
+    # 获取玩家的 items 字段
+    player_items = player.get('items', {})
+
+    # 如果 items 为空，记录日志并退出函数
+    if not player_items:
+        logger.info(f"Player {player_name} has no items to load into Redis")
+        return
+
     # 将玩家信息存储在 Redis 中的哈希表中
     player_items_key = f"{player_name}_ITEMS"
-    player_items = player.get('items', {})
     
     with redis_client.pipeline() as pipe:
         pipe.hmset(player_items_key, player_items)
         pipe.execute()
+    
     logger.info(f"Player {player_name} loaded to Redis with items: {player_items}")
-    # print(f"Player {player_name} loaded to Redis with items: {player_items}")
     return player_items
+
 
 # 每个player进入游戏时执行
 def player_entrance(player_name, card_num):
@@ -127,11 +198,11 @@ def player_entrance(player_name, card_num):
 
                 # 注意，玩家需要在连接完钱包或者进入界面时，就把他的信息加载到redis中
                 # 将玩家的 ITEMS 中的 token 数量减少相应的 cost
-                tokens = redis_client.hget(player_items_key, "tokens")
+                tokens = redis_client.hget(player_items_key, "1")
                 if tokens is None or int(tokens) < cost:
                     return {"error": "Insufficient tokens"}
                 
-                pipe.hincrby(player_items_key, "tokens", -cost)
+                pipe.hincrby(player_items_key, "1", -cost)
 
                 # 将当前游戏的 COUNT 增加1
                 pipe.incr(f"{current_game}_COUNT")
@@ -208,7 +279,10 @@ def game_execution():
     current_game_id = current_game_id.decode('utf-8')
     dealer_key = f"{current_game_id}_DEALER"
     redis_client.set(dealer_key, dealer_hand_str)
-    # 在redis中查询CURRENT_GAME_HANDS的所有玩家手牌
+
+    # 设置荷官手牌过期时间
+    redis_client.expire(dealer_key, 60 * 5)
+    # 在redis中查询CURRENT_GAME_HANDS的所有玩家手牌，并设置过期时间
     hands_key = f"{current_game_id}_HANDS"
     player_hands = redis_client.hgetall(hands_key)
 
@@ -225,6 +299,10 @@ def game_execution():
         # 更新玩家得分 _SCORES
         player_score = calculate_score(best_hand)
         redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
+    
+    # 设置过期时间
+    redis_client.expire(hands_key, 60 * 5)
+    redis_client.expire(scores_key, 60 * 5)
 
     logger.info(f"Dealer's hand {dealer_hand} added to game {current_game_id}")
 
@@ -258,14 +336,20 @@ def game_execution():
     with redis_client.pipeline() as pipe:
         while True:
             try:
-                pipe.watch(rewards_key)
+                pipe.watch(rewards_key, "REWARD_RANKING_DAY")
                 pipe.multi()
                 for player, reward in rewards.items():
                     pipe.zadd(rewards_key, {player: reward})
+                    # 更新每日排行信息
+                    pipe.zincrby("REWARD_RANKING_DAY", reward, player)
                 pipe.execute()
                 break
             except redis.WatchError:
                 continue
+
+    # 设置Rewards过期时间
+    redis_client.expire(rewards_key, 60 * 5)
+    
     # 异步保存游戏数据到 MongoDB
 
     threading.Thread(target=save_current_game_to_mongo, args=(current_game_id, dealer_hand, player_hands, rewards)).start()
@@ -279,7 +363,7 @@ def game_execution():
 
 
 def countdown_timer():
-    countdown_time = timedelta(seconds=5)  # 这里使用5秒进行测试
+    countdown_time = timedelta(seconds=300)  # 这里使用5秒进行测试
     while True:
         end_time = datetime.now() + countdown_time
         while True:
@@ -327,10 +411,45 @@ def save_current_game_to_mongo(current_game_id, dealer_hand, player_hands, rewar
 
     db.games.insert_one(game_data)
 
+# 将 Redis 中的 player_ITEMS 数据持久化到 MongoDB 中
+def persist_player_items_to_mongo(player_name: str):
+    player_items_key = f"{player_name}_ITEMS"
+    player_items = redis_client.hgetall(player_items_key)
+    
+    if player_items:
+        # 转换 Redis 数据为 Python 字典
+        player_items = {key.decode('utf-8'): int(value.decode('utf-8')) for key, value in player_items.items()}
+        
+        # 检查 MongoDB 中是否存在该玩家
+        player_collection = db.players
+        existing_player = player_collection.find_one({"name": player_name})
+        
+        if existing_player:
+            # 更新现有玩家的 items
+            player_collection.update_one({"name": player_name}, {"$set": {"items": player_items}})
+        else:
+            # 插入新玩家
+            new_player = {"name": player_name, "items": player_items}
+            player_collection.insert_one(new_player)
+
+def check_task_completion(player_task_record, refresh_hours):
+    last_completed = player_task_record.get("last_completed")
+    if last_completed:
+        last_completed = datetime.strptime(last_completed, '%Y-%m-%d %H:%M:%S')
+        refresh_time = timedelta(hours=refresh_hours)
+        if datetime.utcnow() < last_completed + refresh_time:
+            remain_time = last_completed + refresh_time - datetime.utcnow()
+            hours, remainder = divmod(remain_time.total_seconds(), 3600)
+            minutes, seconds = divmod(remainder, 60)
+            formatted_remaining_time = f"{int(hours)}:{int(minutes)}:{int(seconds)}"
+            return False, formatted_remaining_time
+    return True, None
+
+
 def start_game_threads():
     start_new_game()
     
-    # for _ in range(20):
+    # for _ in range(5):
     #     player_thread = threading.Thread(target=player_entry)
     #     player_thread.daemon = True
     #     player_thread.start()
