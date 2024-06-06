@@ -136,17 +136,11 @@ async def get_game_info():
         raise HTTPException(status_code=404, detail="No current game found.")
     current_game_id = current_game_id.decode('utf-8')
 
-    # 解析 game_id 获取游戏开始时间
-    try:
-        start_time = datetime.strptime(current_game_id, '%Y%m%d%H%M%S%f')
-    except ValueError:
-        raise HTTPException(status_code=500, detail="Invalid game ID format.")
-
     # 计算当前游戏时间
-    current_time = datetime.utcnow()
-    game_time = current_time - start_time
-    game_seconds = game_time.total_seconds()  # 计算游戏已经进行了多少秒
-    game_showtime = int(30 - game_seconds)
+    game_showtime = redis_client.ttl("CURRENT_GAME")
+    if game_showtime == -2:
+        raise HTTPException(status_code=404, detail="No current game found.")
+    
     # 获取奖池总金额
     pool_key = f"{current_game_id}_POOL"
     pool_amount = redis_client.get(pool_key)
@@ -164,9 +158,9 @@ async def get_game_info():
         player_amount = int(player_amount)
 
     game_info = CurrentGameInfo(
-        game_id=current_game_id,
-        pool_amount=pool_amount,
-        player_amount=player_amount,
+        game_id=current_game_id, # 当前游戏ID
+        pool_amount=pool_amount, # 奖池大小
+        player_amount=player_amount, # 玩家总数
         game_time=game_showtime  # 返回游戏已经进行的秒数
     )
     
@@ -174,7 +168,7 @@ async def get_game_info():
 
 @router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'])
 async def get_endgame_info(request: GameInfoRequest):
-    game_id = request.game_id
+    game_id = request.game_id if request.game_id else redis_client.get("LAST_GAME").decode('utf-8')
     player_name = request.player_name
 
     # 获取荷官手牌
@@ -250,6 +244,12 @@ async def get_endgame_info(request: GameInfoRequest):
 @router.post("/user_login", summary='Invoke once player is login', tags=['Player'])
 async def user_login(request: LoginRequest):
     player_name = request.player_name
+    # Update the player's last login time in MongoDB
+    db.players.update_one(
+        {"name": player_name},
+        {"$set": {"last_login_time": datetime.utcnow()}},
+        upsert=True
+    )
     return JSONResponse(content=load_player_items(player_name))
 
 @router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'])

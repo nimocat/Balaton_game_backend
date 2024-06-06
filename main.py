@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from game_logic import start_game_threads
 from routes import router
 from database import db, redis_client
 from routers.admin import admin
@@ -44,8 +43,6 @@ app.include_router(items, prefix="/api/v1/items")
 if __name__ == "__main__":
     # load data from files first
     load_data_from_files()
-    # start game threads
-    start_game_threads()
 
     # 启动FastAPI应用
     import uvicorn

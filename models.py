@@ -24,7 +24,7 @@ class FullGameInfo(BaseModel):
     game_time: str = Field(..., example="20240603170521000000", description="Timestamp of the game start")
 
 class GameInfoRequest(BaseModel):
-    game_id: str = Field(..., example="game123", description="Unique identifier for the game")
+    game_id: str = Field(None, example="game123", description="Unique identifier for the game")
     player_name: str = Field(..., example="JohnDoe", description="Name of the player requesting game info")
 
 class GameInfoResponse(BaseModel):

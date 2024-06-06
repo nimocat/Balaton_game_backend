@@ -59,17 +59,6 @@ def player_to_dict(player, current_game):
         "game_ids": []
     }
 
-def countdown_expiry_listener():
-    pubsub = redis_client.pubsub()
-    pubsub.psubscribe("__keyevent@0__:expired")
-
-    for message in pubsub.listen():
-        if message['type'] == 'pmessage':
-            data = message['data'].decode('utf-8')
-            print(f"Key expired: {data}")
-            if data == "CURRENT_GAME":
-                game_execution()
-
 def load_player_items(player_name: str) -> dict:
     player_items_key = f"{player_name}_ITEMS"
 
@@ -345,20 +334,6 @@ def game_execution():
         player_reward = int(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score} and reward {player_reward}")
 
-def countdown_timer():
-    countdown_time = timedelta(seconds=30)  # 这里使用5秒进行测试
-    while True:
-        end_time = datetime.now() + countdown_time
-        while True:
-            current_time = datetime.now()
-            remaining_time = end_time - current_time
-            if remaining_time <= timedelta(seconds=0):
-                break
-            print(f"Current time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} - Time remaining: {str(remaining_time).split('.')[0]}")
-            time.sleep(1)
-        game_execution()
-        start_new_game()
-
 def save_current_game_to_mongo(current_game_id, dealer_hand_str, player_hands, rewards, pool):
     # 保存当前游戏数据到 games 集合
     game_data = {
@@ -428,16 +403,3 @@ def check_task_completion(player_task_record, refresh_hours):
             formatted_remaining_time = f"{int(hours)}:{int(minutes)}:{int(seconds)}"
             return False, formatted_remaining_time
     return True, None
-
-
-def start_game_threads():
-    start_new_game()
-    
-    # for _ in range(5):
-    #     player_thread = threading.Thread(target=player_entry)
-    #     player_thread.daemon = True
-    #     player_thread.start()
-
-    countdown_thread = threading.Thread(target=countdown_timer)
-    countdown_thread.daemon = True
-    countdown_thread.start()
