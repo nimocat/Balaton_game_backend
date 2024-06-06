@@ -22,7 +22,7 @@ def admin_auth(token: str):
     if token != admin_secret:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-@admin.post("/faucet")
+@admin.post("/faucet", summary="Admin endpoint to add tokens to a player's account", tags=["admin"])
 async def faucet(player_name: str):
     # 检查玩家是否存在于 Redis 中
     player_items_key = f"{player_name}_ITEMS"
@@ -35,6 +35,21 @@ async def faucet(player_name: str):
 
     return {"player_name": player_name, "new_balance": new_balance}
 
+@admin.post("/item_faucet", summary="Admin endpoint to add items to a player's account", tags=["admin"])
+async def faucet(player_name: str, item_id: str):
+    # 获得玩家items key
+    player_items_key = f"{player_name}_ITEMS"
+
+    item_key = f"item:{item_id}"
+    if not redis_client.exists(item_key):
+        return {"message": "Item not found", "status": 0}
+    # 增加 1000 个 item_id
+    redis_client.hincrby(player_items_key, item_id, 100)
+    new_balance = redis_client.hget(player_items_key, item_id).decode('utf-8')
+    
+    logger.info(f"Player {player_name} received 100 {item_id} items. New balance: {new_balance}")
+
+    return {"player_name": player_name, "new_balance": new_balance}
 
 # 函数：将 task.xlsx 文件加载到 Redis 中
 def load_tasks_to_redis():

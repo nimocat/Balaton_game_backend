@@ -3,13 +3,14 @@ from game_logic import start_game_threads
 from routes import router
 from database import db, redis_client
 from routers.admin import admin
+from routers.items import items
 import sys
 import time
 from contextlib import asynccontextmanager
 import asyncio
 from datetime import datetime, timedelta
+from utils.pre_loads import load_data_from_files
 
-sys.path.append('routes')
 # 每次游戏，记录CURRENT_GAME - str
 # CURRENT_GAME_DEALER - str
 # CURRENT_GAME_PLAYERS - list
@@ -38,8 +39,12 @@ async def lifespan(app: FastAPI):
 app = FastAPI()
 app.include_router(router, prefix="/api/v1/game")
 app.include_router(admin, prefix="/api/v1/admin")
+app.include_router(items, prefix="/api/v1/items")
 
 if __name__ == "__main__":
+    # load data from files first
+    load_data_from_files()
+    # start game threads
     start_game_threads()
 
     # 启动FastAPI应用

@@ -60,12 +60,12 @@ async def check_player_in_game(player_name: str):
     
     current_game_id = current_game_id.decode('utf-8')
     hands_key = f"{current_game_id}_HANDS"
-    
+
     player_hand = redis_client.hget(hands_key, player_name)
     if player_hand:
-        return JSONResponse(content={"hand": json.loads(player_hand.decode('utf-8'))})
+        return JSONResponse(content={"cards": player_hand.decode('utf-8'), "status": 1})
     else:
-        return JSONResponse(content=-1)
+        return JSONResponse(content={"status": 0})
 
 @router.get("/info/top_daily_rewards", response_model=TopDailyRewardsResponse, summary="Get top daily rewards", tags=["Info"])
 async def get_top_daily_rewards():
@@ -142,11 +142,11 @@ async def get_game_info():
     except ValueError:
         raise HTTPException(status_code=500, detail="Invalid game ID format.")
 
-    ## 返回一个秒数
     # 计算当前游戏时间
     current_time = datetime.utcnow()
     game_time = current_time - start_time
-
+    game_seconds = game_time.total_seconds()  # 计算游戏已经进行了多少秒
+    game_showtime = int(30 - game_seconds)
     # 获取奖池总金额
     pool_key = f"{current_game_id}_POOL"
     pool_amount = redis_client.get(pool_key)
@@ -156,7 +156,8 @@ async def get_game_info():
         pool_amount = int(pool_amount)
 
     # 获取玩家数量
-    player_amount = redis_client.get(player_amount)
+    player_count_key = f"{current_game_id}_POOL"
+    player_amount = redis_client.get(player_count_key)
     if player_amount is None:
         player_amount = 0
     else:
@@ -166,8 +167,10 @@ async def get_game_info():
         game_id=current_game_id,
         pool_amount=pool_amount,
         player_amount=player_amount,
-        game_time=str(game_time)
+        game_time=game_showtime  # 返回游戏已经进行的秒数
     )
+    
+    return JSONResponse(content=game_info.dict())
 
 @router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'])
 async def get_endgame_info(request: GameInfoRequest):
@@ -179,14 +182,15 @@ async def get_endgame_info(request: GameInfoRequest):
     dealer_hand = redis_client.get(dealer_key)
     if not dealer_hand:
         raise HTTPException(status_code=404, detail="Game ID not found or dealer hand not set")
-    dealer_hand = dealer_hand.decode('utf-8').split(' ')
+    dealer_hand = dealer_hand.decode('utf-8')
+    print(dealer_hand)
 
     # 获取玩家手牌
     hands_key = f"{game_id}_HANDS"
     player_hand = redis_client.hget(hands_key, player_name)
     if not player_hand:
         raise HTTPException(status_code=404, detail="Player not found in the specified game")
-    player_hand = json.loads(player_hand.decode('utf-8'))
+    player_hand = player_hand.decode('utf-8')
 
     # 获取玩家最佳手牌和得分
     scores_key = f"{game_id}_SCORES"
@@ -194,9 +198,16 @@ async def get_endgame_info(request: GameInfoRequest):
     if player_score is None:
         raise HTTPException(status_code=404, detail="Player score not found")
     
+    # 获取玩家手牌
+    best_hands_key = f"{game_id}_BEST_HANDS"
+    player_best_hand = redis_client.hget(best_hands_key, player_name)
+    if not player_hand:
+        raise HTTPException(status_code=404, detail="Player not found in the specified game")
+    player_best_hand = player_best_hand.decode('utf-8')
+
     # 获取玩家奖励
     rewards_key = f"{game_id}_REWARDS"
-    player_reward = redis_client.zscore(rewards_key, player_name)
+    player_reward = int(redis_client.zscore(rewards_key, player_name))
     if player_reward is None:
         player_reward = 0  # If no reward found, default to 0
 
@@ -225,7 +236,7 @@ async def get_endgame_info(request: GameInfoRequest):
         game_id=game_id,
         dealer_hand=dealer_hand,
         player_hand=player_hand,
-        player_best_hand=player_hand,  # Assuming best hand is the player's hand itself
+        player_best_hand=player_best_hand,  # Assuming best hand is the player's hand itself
         player_score=player_score,
         player_reward=player_reward,
         player_rank=player_rank,
@@ -233,7 +244,7 @@ async def get_endgame_info(request: GameInfoRequest):
         player_count=player_count
     )
 
-    return JSONResponse(content=game_info)
+    return JSONResponse(content=game_info.dict())
 
 # Player routers
 @router.post("/user_login", summary='Invoke once player is login', tags=['Player'])
@@ -253,8 +264,8 @@ async def player_entrance_route(request: EntranceRequest):
     else:
         raise HTTPException(status_code=400, detail="Invalid payment amount")
 
-    player_entrance(player_name, card_num)
-    return {"message": f"Player {player_name} entered the game with {card_num} cards."} # 返回手牌
+    cards = player_entrance(player_name, card_num)
+    return {"message": f"Player {player_name} entered the game with {card_num} cards.", "cards": cards} # 返回手牌
 
 @router.get("/players/{player_name}/items",response_model=PlayerItemsResponse, summary='Get the player items', tags=['Player'])
 async def get_player_items(player_name: str):
@@ -281,12 +292,35 @@ async def get_player_history(player_name: str):
         raise HTTPException(status_code=404, detail="Player not found")
 
     history = player.get("history", [])
-    # 确保 reward 为浮点数
+    formatted_history = []
+    
     for entry in history:
-        entry['reward'] = float(entry['reward'])
+        game_id = entry['game_id']
+        hand = entry['hand']
+        score = entry['score']
+        reward = entry['reward']
+        
+        # Determine bet based on the number of items in hand
+        hand_list = eval(hand)
+        if len(hand_list) == 3:
+            bet = 40
+        elif len(hand_list) == 2:
+            bet = 20
+        else:
+            bet = 0
+        
+        # Format game_id to "YYYY/MM/DD HH:MM"
+        formatted_game_id = f"{game_id[:4]}/{game_id[4:6]}/{game_id[6:8]} {game_id[8:10]}:{game_id[10:12]}"
+        
+        formatted_history.append({
+            "game_id": formatted_game_id,
+            "hand": hand,
+            "bet": bet,
+            "score": score,
+            "reward": reward
+        })
 
-    return {"player_name": player_name, "history": history}
-
+    return {"player_name": player_name, "history": formatted_history}
  # Tasks
 @router.post("/tasks/invite", summary='Invoke when invite link has been clicked', tags=['Task'])
 async def invite_new_user(request: InviteRequest):
@@ -298,17 +332,17 @@ async def invite_new_user(request: InviteRequest):
     existing_invitee_in_redis = redis_client.hgetall(f"{invitee}_ITEMS")
 
     if existing_invitee or existing_invitee_in_redis:
-        return {"message": "Invitee already exists in the database"}
+        return {"message": "Invitee already exists in the database", "status": 0}
 
     # 如果 invitee 是新用户，则 inviter 获得 80 tokens，invitee 获得 100 tokens
-    redis_client.hincrby(f"{inviter}_ITEMS", "1", 80)
-    redis_client.hincrby(f"{invitee}_ITEMS", "1", 100)
+    redis_client.incrby(f"{inviter}_TOKENS", 80)
+    redis_client.incrby(f"{invitee}_TOKENS", 100)
 
     # 将 Redis 数据持久化到 MongoDB 中
-    persist_player_items_to_mongo(inviter)
-    persist_player_items_to_mongo(invitee)
+    update_player_items_to_mongo(inviter)
+    update_player_items_to_mongo(invitee)
 
-    return {"message": f"Inviter {inviter} received 80 tokens. New invitee {invitee} received 100 tokens."}
+    return {"message": f"Inviter {inviter} received 80 tokens. New invitee {invitee} received 100 tokens.", "status": 1}
 
 @router.get("/tasks/share_to_group", summary='Invoke once share to group button is clicked', tags=['Task'])
 async def share_to_group(sharer: str):
@@ -345,7 +379,7 @@ async def share_to_group(sharer: str):
         player.setdefault("tasks", []).append(player_task_record)
 
     # 增加 60 个代币
-    redis_client.hincrby(f"{sharer}_ITEMS", "1", 60)
+    redis_client.incrby(f"{sharer}_TOKENS", 60)
 
     # 将 Redis 数据持久化到 MongoDB 中
     persist_player_items_to_mongo(sharer)
@@ -381,64 +415,3 @@ async def get_tasks(player_name: str):
                     task['remain_time'] = str(refresh_time - time_diff)
 
     return {"tasks": task_list}
-
-@router.post("/player/purchase", response_model=PurchaseResponse, summary="Purchase an item", tags=["Player"])
-async def purchase_item(request: PurchaseRequest):
-    item_key = f"shop_item:{request.item_id}"
-    player_key = f"{request.player_name}_ITEMS"  # Use player_name to construct the player key
-
-    # Check if the item exists and is available
-    if not redis_client.exists(item_key):
-        raise HTTPException(status_code=404, detail="Item not found")
-    
-    item_data = redis_client.hgetall(item_key)
-    if not bool(int(item_data[b'avaliable'].decode('utf-8'))):
-        raise HTTPException(status_code=400, detail="Item not available")
-
-    price = int(item_data[b'price'].decode('utf-8'))
-    discount = float(item_data[b'discount'].decode('utf-8'))
-    available_stock = int(item_data[b'num'].decode('utf-8'))
-
-    total_cost = int(price * request.purchase_num * (1 - discount))
-    
-    # Check if there is enough stock and if the player has enough money
-    player_data = redis_client.hgetall(player_key)
-    if not player_data:
-        raise HTTPException(status_code=404, detail="Player itmes not found")
-    player_balance = int(player_data[b'1'].decode('utf-8'))  # Assuming money is stored with ID 1
-
-    if request.purchase_num > available_stock:
-        raise HTTPException(status_code=400, detail="Not enough stock")
-    
-    if total_cost > player_balance:
-        raise HTTPException(status_code=400, detail="Not enough balance")
-
-    # Perform the purchase using Redis transactions
-    with redis_client.pipeline() as pipe:
-        while True:
-            try:
-                # Watch the keys that will be modified
-                pipe.watch(item_key, player_key)
-
-                # Update stock and player balance
-                pipe.multi()
-                if available_stock != 999:
-                    pipe.hincrby(item_key, "num", -request.purchase_num)
-                pipe.hincrby(player_key, "1", -total_cost)
-                pipe.hincrby(player_key, str(request.item_id), request.purchase_num)
-                pipe.execute()
-                break
-            except redis.WatchError:
-                # If the watched keys were modified, retry the transaction
-                continue
-    
-    update_player_items_to_mongo(request.player_name)
-
-    remaining_balance = player_balance - total_cost
-    remaining_stock = available_stock - request.purchase_num
-
-    return PurchaseResponse(
-        message="Purchase completed successfully",
-        remaining_balance=remaining_balance,
-        remaining_stock=remaining_stock
-    )

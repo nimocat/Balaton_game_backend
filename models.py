@@ -2,16 +2,6 @@ from alg import generate_hand
 from pydantic import BaseModel, Field
 from typing import List, Dict
 
-class Player:
-    def __init__(self, name):
-        self.name = name
-        self.hand = []
-        self.enter_game()
-
-    def enter_game(self):
-        self.hand = generate_hand(2)
-        print(f"Player {self.name} has entered the game with hand: {self.hand}")
-
 class LoginRequest(BaseModel):
     player_name: str = Field(..., example="JohnDoe", description="Name of the player logging in")
 
@@ -25,7 +15,7 @@ class CurrentGameInfo(BaseModel):
     game_id: str = Field(..., example="game123", description="Unique identifier for the current game")
     pool_amount: int = Field(..., example=1000, description="Total amount in the game's pool")
     player_amount: int = Field(..., example=5, description="Number of players in the game")
-    game_time: str = Field(..., example="20240603170521000000", description="Timestamp of the game start")
+    game_time: int = Field(..., example=15, description="Timestamp of the game start")
 
 class FullGameInfo(BaseModel):
     game_id: str = Field(..., example="game123", description="Unique identifier for the game")
@@ -39,11 +29,11 @@ class GameInfoRequest(BaseModel):
 
 class GameInfoResponse(BaseModel):
     game_id: str = Field(..., example="game123", description="Unique identifier for the game")
-    dealer_hand: List[str] = Field(..., example="['SA', 'S7', 'H9', 'CA', 'D8']", 
+    dealer_hand: str = Field(..., example="['SA', 'S7', 'H9', 'CA', 'D8']", 
                                      description="Dealer's 5 cards")
-    player_hand: List[str] = Field(..., example="['SJ', 'HT']", 
+    player_hand: str = Field(..., example="['SJ', 'HT']", 
                                      description="Player's cards")
-    player_best_hand: List[str] = Field(..., example="['SA', 'S7', 'H9', 'CA', 'SJ']", 
+    player_best_hand: str = Field(..., example="['SA', 'S7', 'H9', 'CA', 'SJ']", 
                                      description="Player's best 5 cards")
     player_score: int = Field(..., example=95, description="Score of the player")
     player_reward: int = Field(..., example=150, description="Reward amount for the player")
@@ -69,9 +59,10 @@ class PlayerItemsResponse(BaseModel):
     
 class GameHistoryEntry(BaseModel):
     game_id: str = Field(..., example="60c72b2f9b7e8b6f4f0e5e13", description="The ID of the game")
-    hand: List[str] = Field(..., example=["D5", "H8", "C9"], description="The hand of the player")
+    hand: str = Field(..., example="['D5', 'H8', 'C9']", description="The hand of the player")
     score: int = Field(..., example=95, description="The score of the player in the game")
     reward: int = Field(..., example=20, description="The reward earned by the player in the game")
+    bet: int = Field(..., example=50, description="The bet placed by the player in the game")
 
 class PlayerReward(BaseModel):
     player_name: str = Field(..., example="player1", description="The name of the player")
@@ -94,15 +85,17 @@ class PlayerHistoryResponse(BaseModel):
         example=[
             {
                 "game_id": "60c72b2f9b7e8b6f4f0e5e13",
-                "hand": ["D5", "H8", "C9"],
+                "hand": "['S7', 'H2', 'D9']",
                 "score": 95,
-                "reward": 20.0
+                "reward": 20,
+                "bet": 50
             },
             {
                 "game_id": "60c72b2f9b7e8b6f4f0e5e14",
-                "hand": ["S7", "H2", "D9"],
+                "hand": "['S7', 'H2', 'D9']",
                 "score": 88,
-                "reward": 15.0
+                "reward": 15,
+                "bet": 30
             }
         ],
         description="A list of game history entries for the player"
@@ -147,3 +140,7 @@ class OpenItemRequest(BaseModel):
 class OpenItemResponse(BaseModel):
     message: str = Field(..., example="Items opened successfully", description="The result of the operation")
     obtained_items: Dict[int, int] = Field(..., example={2001: 5, 2002: 3}, description="Items obtained from the opened item")
+
+class PlayerInGameResponse(BaseModel):
+    cards: str = Field(default=None, example="['AH', 'KH', 'QH', 'JH', '10H']", description="The cards currently held by the player")
+    status: int = Field(..., example=1, description="The status of the player in the game (1 for active, 0 for inactive)")

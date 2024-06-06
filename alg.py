@@ -2,6 +2,7 @@ import random
 import itertools
 import math
 from database import redis_client
+import json
 
 # 定义扑克牌，包括大小王
 suits = ['H', 'S', 'D', 'C']  # 红桃, 黑桃, 方块, 梅花
@@ -69,10 +70,18 @@ def calculate_score(hand):
     return max(possible_scores)
 
 def combine_hands(dealer_hand, player_hand):
+    # Convert string representations of hands into lists
+    print(dealer_hand)
+    print(player_hand)
+    dealer_hand_list = eval(dealer_hand)
+    player_hand_list = eval(player_hand)
+    
     # Combine dealer's hand with player's hand
-    combined_hands = dealer_hand + player_hand
+    combined_hands = dealer_hand_list + player_hand_list
+    
     # Find the best 5-card combination (assuming best 5-card poker hand)
-    best_hand = max(itertools.combinations(combined_hands, 5), key=calculate_score)
+    best_hand = list(max(itertools.combinations(combined_hands, 5), key=calculate_score))
+    # Convert best_hand to string format
     return best_hand
 
 def calculate_score_without_joker(rank_counts, hand):

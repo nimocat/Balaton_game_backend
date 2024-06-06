@@ -30,17 +30,23 @@ logger.addHandler(console)
 # 游戏引擎单例
 def start_new_game():
 
+    CURRENT_GAME = "CURRENT_GAME"
+    DURATION = 35
+
+    # # 检查是否已存在游戏ID
+    # if redis_client.get(CURRENT_GAME):
+    #     return  # 如果CURRENT_GAME已存在，不执行任何操作
+
     # 生成game_id
     game_id = datetime.utcnow().strftime('%Y%m%d%H%M%S%f')
-    current_game = {
-        "game_id": game_id,
-        "dealer_hand": [],
-        "players": [],
-        "players_ranking": []
-    }
+
+    redis_client.set(CURRENT_GAME, game_id)
+    # 设置过期时间，如果查询不到CURRENT_GAME，则为游戏结算中，未开始新游戏。如果查询到的CURRENT_GAME和客户端存储的game_id不同，则说明已经开始一局新游戏
+    redis_client.expire(CURRENT_GAME, DURATION)
+    redis_client.publish("countdown_channel", f"Countdown started for {CURRENT_GAME} with duration {DURATION} seconds")
+
     logger.info(f"Game ID: {game_id} Generated, New Game Start")
     # 存入数据库，所有基于redis的新数据添加，都根据CURRENT_GAME这个值来进行
-    redis_client.set("CURRENT_GAME", game_id)
 
 def player_to_dict(player, current_game):
     return {
@@ -52,6 +58,17 @@ def player_to_dict(player, current_game):
         "game_id": current_game["game_id"],
         "game_ids": []
     }
+
+def countdown_expiry_listener():
+    pubsub = redis_client.pubsub()
+    pubsub.psubscribe("__keyevent@0__:expired")
+
+    for message in pubsub.listen():
+        if message['type'] == 'pmessage':
+            data = message['data'].decode('utf-8')
+            print(f"Key expired: {data}")
+            if data == "CURRENT_GAME":
+                game_execution()
 
 def load_player_items(player_name: str) -> dict:
     player_items_key = f"{player_name}_ITEMS"
@@ -70,45 +87,6 @@ def load_player_items(player_name: str) -> dict:
 
     return load_player_to_redis(player_name)
 
-def load_game_items_to_redis(file_path: str):
-    # Read the Excel file
-    df = pd.read_excel(file_path)
-    
-    # Iterate over the rows and write to Redis
-    with redis_client.pipeline() as pipe:
-        for index, row in df.iterrows():
-            item_id = row['item_id']
-            item_data = {
-                "type": row['type'],
-                "name": row['name'],
-                "short_description": row['short_description'],
-                "long_description": row['long_description'],
-                "available": row['avaliable']  # Correct the typo in the column name if necessary
-            }
-            pipe.hmset(f"game_item:{item_id}", item_data)
-        pipe.execute()
-    
-    logger.info("Game items loaded into Redis")
-
-def load_shop_to_redis(file_path: str):
-    # Read the Excel file
-    df = pd.read_excel(file_path)
-
-    # Iterate over the rows and write to Redis
-    with redis_client.pipeline() as pipe:
-        for index, row in df.iterrows():
-            item_id = row['item_id']
-            item_data = {
-                "price": int(row['price']),
-                "avaliable": bool(row['avaliable']),
-                "discount": float(row['discount']),
-                "num": int(row['num'])
-            }
-            pipe.hmset(f"shop_item:{item_id}", item_data)
-        pipe.execute()
-
-    logger.info("Shop items loaded into Redis")
-
 def update_player_items_to_mongo(player_name: str):
     player_key = f"{player_name}_ITEMS"
 
@@ -121,8 +99,7 @@ def update_player_items_to_mongo(player_name: str):
     player_items = redis_client.hgetall(player_key)
 
     # Convert Redis data to the appropriate format
-    items = {int(key.decode('utf-8')): int(value.decode('utf-8')) for key, value in player_items.items()}
-
+    items = {str(key.decode('utf-8')): int(value.decode('utf-8')) for key, value in player_items.items()}
     # Update the player's items in MongoDB
     db.players.update_one(
         {"name": player_name},
@@ -137,8 +114,7 @@ def load_player_to_redis(player_name: str):
     player = db.players.find_one({"name": player_name})
     if not player:
         logger.info(f"Player {player_name} not found in MongoDB")
-        raise ValueError(f"Player {player_name} not found in MongoDB")
-
+        return
     # 获取玩家的 items 字段
     player_items = player.get('items', {})
 
@@ -165,7 +141,7 @@ def player_entrance(player_name, card_num):
 
     # 随机card_num张玩家的手牌
     player_hand = generate_hand(card_num)
-    hand_str = json.dumps(player_hand)  # 将手牌转换为字符串存储
+    hand_str = str(player_hand)  # 将手牌转换为字符串存储
 
     # 计算开销
     cost = 40 if card_num == 3 else 20
@@ -214,6 +190,7 @@ def player_entrance(player_name, card_num):
                 # 如果在事务执行期间键的值发生了变化，重试
                 continue
     logger.info(f"Player {player_name} finished enter game, data updated to Redis")
+    return hand_str
 
     
 # 模拟测试
@@ -274,7 +251,8 @@ def game_execution():
 
     # 荷官随机五张牌，作为荷官手牌
     dealer_hand = generate_hand(5)
-    dealer_hand_str = json.dumps(dealer_hand)  # 将手牌转换为字符串存储
+    dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
+    logger.info(f"Dealer's hand {dealer_hand_str} string")
 
     current_game_id = current_game_id.decode('utf-8')
     dealer_key = f"{current_game_id}_DEALER"
@@ -290,14 +268,16 @@ def game_execution():
 
     # 计算和存储每个玩家的分数
     for player_name, hand in player_hands.items():
-        player_hand = json.loads(hand.decode('utf-8'))
-        best_hand = combine_hands(dealer_hand, player_hand)
-
+        print(hand)
+        player_hand_str = hand.decode('utf-8')
+        best_hand = combine_hands(dealer_hand_str, player_hand_str)
+        best_hand_str = str(best_hand)
+        print("best", best_hand_str)
         # 更新玩家最终手牌 _HANDS
-        redis_client.hset(f"{current_game_id}_HANDS", player_name, json.dumps(best_hand))
-        
+        redis_client.hset(f"{current_game_id}_BEST_HANDS", player_name, best_hand_str)
+
         # 更新玩家得分 _SCORES
-        player_score = calculate_score(best_hand)
+        player_score = int(calculate_score(best_hand))
         redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
     
     # 设置过期时间
@@ -309,8 +289,8 @@ def game_execution():
     player_scores = []
     # 打印每个玩家的分数
     for player_name, hand in player_hands.items():
-        player_hand = hand.decode('utf-8').split(' ')
-        player_score = redis_client.zscore(scores_key, player_name.decode('utf-8'))
+        player_hand = hand.decode('utf-8')
+        player_score = int(redis_client.zscore(scores_key, player_name.decode('utf-8')))
         player_scores.append((player_name.decode('utf-8'), player_score))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score}")
     
@@ -320,8 +300,8 @@ def game_execution():
     top_10_percent_index = max(1, math.floor(num_players * 0.1))
     top_25_percent_index = max(1, math.floor(num_players * 0.25))
     prize_pool = int(redis_client.get(f"{current_game_id}_POOL") or 0)
-    top_10_percent_reward = prize_pool * 0.5 / top_10_percent_index if top_10_percent_index > 0 else 0
-    top_10_to_25_percent_reward = prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index) if top_25_percent_index > top_10_percent_index else 0
+    top_10_percent_reward = int(prize_pool * 0.5 / top_10_percent_index) if top_10_percent_index > 0 else 0
+    top_10_to_25_percent_reward = int(prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index)) if top_25_percent_index > top_10_percent_index else 0
 
     rewards = {}
     for i, (player_name, player_score) in enumerate(player_scores):
@@ -331,6 +311,7 @@ def game_execution():
             rewards[player_name] = top_10_to_25_percent_reward
         else:
             rewards[player_name] = 0
+
     # 将奖励写入Redis中的_REWARDS有序集合
     rewards_key = f"{current_game_id}_REWARDS"
     with redis_client.pipeline() as pipe:
@@ -342,6 +323,10 @@ def game_execution():
                     pipe.zadd(rewards_key, {player: reward})
                     # 更新每日排行信息
                     pipe.zincrby("REWARD_RANKING_DAY", reward, player)
+                    # 为所有奖励不为0的玩家的items id为1的值增加奖励
+                    if reward > 0:
+                        player_items_key = f"{player}_ITEMS"
+                        pipe.hincrby(player_items_key, "1", reward)
                 pipe.execute()
                 break
             except redis.WatchError:
@@ -351,19 +336,17 @@ def game_execution():
     redis_client.expire(rewards_key, 60 * 5)
     
     # 异步保存游戏数据到 MongoDB
-
-    threading.Thread(target=save_current_game_to_mongo, args=(current_game_id, dealer_hand, player_hands, rewards)).start()
+    threading.Thread(target=save_current_game_to_mongo, args=(current_game_id, dealer_hand_str, player_hands, rewards, prize_pool)).start()
 
     # 打印结果
     for player_name, hand in player_hands.items():
-        player_hand = json.loads(hand.decode('utf-8'))  # 从JSON字符串解析为列表
-        player_score = redis_client.zscore(scores_key, player_name.decode('utf-8'))
-        player_reward = redis_client.zscore(rewards_key, player_name.decode('utf-8'))
+        player_hand = hand.decode('utf-8') # 从JSON字符串解析为列表
+        player_score = int(redis_client.zscore(scores_key, player_name.decode('utf-8')))
+        player_reward = int(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score} and reward {player_reward}")
 
-
 def countdown_timer():
-    countdown_time = timedelta(seconds=300)  # 这里使用5秒进行测试
+    countdown_time = timedelta(seconds=30)  # 这里使用5秒进行测试
     while True:
         end_time = datetime.now() + countdown_time
         while True:
@@ -376,19 +359,20 @@ def countdown_timer():
         game_execution()
         start_new_game()
 
-def save_current_game_to_mongo(current_game_id, dealer_hand, player_hands, rewards):
+def save_current_game_to_mongo(current_game_id, dealer_hand_str, player_hands, rewards, pool):
     # 保存当前游戏数据到 games 集合
     game_data = {
         "game_id": current_game_id,
-        "dealer_hand": dealer_hand,
+        "pool": pool,
+        "dealer_hand": dealer_hand_str,
         "players": [],
         "rewards": rewards,
         "timestamp": datetime.utcnow()
     }
     for player_name, hand in player_hands.items():
-        player_hand = json.loads(hand.decode('utf-8'))
-        player_score = redis_client.zscore(f"{current_game_id}_SCORES", player_name.decode('utf-8'))
-        player_reward = rewards.get(player_name.decode('utf-8'), 0)
+        player_hand = hand.decode('utf-8')
+        player_score = int(redis_client.zscore(f"{current_game_id}_SCORES", player_name.decode('utf-8')))
+        player_reward = int(rewards.get(player_name.decode('utf-8'), 0))
         game_data["players"].append({
             "name": player_name.decode('utf-8'),
             "hand": player_hand,
