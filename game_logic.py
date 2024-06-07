@@ -403,3 +403,64 @@ def check_task_completion(player_task_record, refresh_hours):
             formatted_remaining_time = f"{int(hours)}:{int(minutes)}:{int(seconds)}"
             return False, formatted_remaining_time
     return True, None
+
+def get_checkin_data(check_in_type):
+    # Retrieve all checkin tasks of type '1' from Redis and format them into JSON
+    checkin_type_one_keys = redis_client.keys(f"checkin:{check_in_type}")
+    checkin_type_one_tasks = []
+    
+    for key in checkin_type_one_keys:
+        task_data = redis_client.hgetall(key)
+        for checkpoint, rewards in task_data.items():
+            try:
+                checkpoint_int = int(checkpoint)
+                rewards_str = rewards.decode('utf-8')
+            except ValueError:
+                continue  # Skip this iteration if conversion to int fails
+            task = {
+                "checkpoint": checkpoint_int,
+                "rewards": rewards_str
+            }
+            checkin_type_one_tasks.append(task)
+    return checkin_type_one_tasks
+
+def update_can_claim_tasks(player_name):
+    # Fetch player's consecutive checkins from MongoDB
+    player_data = db.players.find_one({"name": player_name})
+    consecutive_checkins = player_data.get('consecutive_checkins', 0)
+
+    # Fetch type 2 checkin tasks from Redis
+    type_two_tasks = redis_client.hgetall("checkin:2")
+    can_claim = set(redis_client.smembers(f"{player_name}_CANCLAIM"))
+    claimed = set(redis_client.smembers(f"{player_name}_CLAIMED"))
+
+    # Determine new tasks that can be claimed
+    new_can_claim = []
+    for checkpoint, task_id in type_two_tasks.items():
+        checkpoint_int = int(checkpoint)
+        task_id_str = task_id.decode('utf-8')
+
+        if consecutive_checkins >= checkpoint_int and task_id_str not in can_claim and task_id_str not in claimed:
+            new_can_claim.append(task_id_str)
+            can_claim.add(task_id_str)
+
+    # Update CANCLAIM in Redis
+    if new_can_claim:
+        redis_client.sadd(f"{player_name}_CANCLAIM", *new_can_claim)
+
+    # Sync CANCLAIM with MongoDB
+    db.players.update_one(
+        {"name": player_name},
+        {"$set": {"can_claim": list(can_claim)}}
+    )
+
+    return list(new_can_claim)
+
+async def is_type2(task_id):
+    """
+    Check if a task ID belongs to type 2 by looking up the 'checkin:2' hashmap in Redis.
+    """
+    # Check if the task_id exists in the 'checkin:2' hashmap
+    exists = redis_client.hexists("checkin:2", task_id)
+    return exists
+

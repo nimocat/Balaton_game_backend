@@ -144,3 +144,15 @@ class OpenItemResponse(BaseModel):
 class PlayerInGameResponse(BaseModel):
     cards: str = Field(default=None, example="['AH', 'KH', 'QH', 'JH', '10H']", description="The cards currently held by the player")
     status: int = Field(..., example=1, description="The status of the player in the game (1 for active, 0 for inactive)")
+
+class Type2TaskResponse(BaseModel):
+    can_claim: List[int] = Field(..., example=[203])
+    claimed: List[int] = Field(..., example=[201, 202])
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "can_claim": [203],
+                "claimed": [201, 202]
+            }
+        }

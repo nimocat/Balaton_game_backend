@@ -52,8 +52,59 @@ def load_shop_items():
 
     logger.info("Shop items loaded into Redis successfully.")
 
+def load_quest_items():
+    # Load the data from Excel file
+    quest_df = pd.read_excel('design_docs/Quest.xlsx')
+    
+    # Use a Redis pipeline to batch the operations and reduce the number of round trips to the server
+    with redis_client.pipeline() as pipe:
+        for _, row in quest_df.iterrows():
+            # Construct the Redis key using quest_id
+            key = f"quest:{row['Id']}"
+            # Create a dictionary of the quest attributes to be stored
+            quest_data = {
+                'type': row['type'],
+                'prohibility': row['prohibility'],
+                'num': row['num']
+            }
+            # Store the quest data in Redis
+            pipe.hmset(key, quest_data)
+        # Execute all commands in the batch
+        pipe.execute()
+
+    logger.info("Quest items loaded into Redis successfully.")
+
+def load_checkin():
+    # Load the data from Excel file
+    checkin_df = pd.read_excel('design_docs/checkin.xlsx')
+    
+    # Use a Redis pipeline to batch the operations and reduce the number of round trips to the server
+    with redis_client.pipeline() as pipe:
+        for _, row in checkin_df.iterrows():
+            # Extract data from the row
+            task_id = int(row['id'])
+            checkpoint = int(row['checkpoint'])
+            type = int(row['type'])
+            rewards = str(row['reward'])
+            
+            # Construct the Redis key using type
+            key = f"checkin:{type}"
+            # Construct the field-value pair where task_id is the field and checkpoint:rewards is the value
+            field_value = f"{checkpoint}:{rewards}"
+            
+            # Use Redis' HSET to store the checkin data with the key, field (task_id), and value (checkpoint:rewards)
+            pipe.hset(key, task_id, field_value)
+        
+        # Execute all commands in the batch
+        pipe.execute()
+
+    logger.info("Check-in data loaded into Redis successfully.")
+
+
 def load_data_from_files():
     # Load game items first
     load_game_items()
     # Add other data loading functions here in the sequence they need to be loaded
     load_shop_items()
+
+    load_checkin()

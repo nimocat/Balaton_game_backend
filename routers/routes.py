@@ -1,12 +1,12 @@
 import json
 from models import *
 from game_logic import *
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path
 from fastapi.responses import JSONResponse
-from database import db, serialize_objectid
+from database import db
 from database import redis_client
 from datetime import datetime
-
+from hooks import player_hook
 router = APIRouter()
 
 @router.get("/game_id", response_model=str, summary='Get the current game id', tags=['Info'])
@@ -245,12 +245,95 @@ async def get_endgame_info(request: GameInfoRequest):
 async def user_login(request: LoginRequest):
     player_name = request.player_name
     # Update the player's last login time in MongoDB
+    player_hook.login_hook(player_name)
+    return JSONResponse(content=load_player_items(player_name))
+
+# Player routers
+@router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'])
+async def daily_checkin(request: LoginRequest):
+    player_name = request.player_name
+    player_data = db.players.find_one({"name": player_name})
+    if not player_data:
+        raise Exception("Player not found")
+
+    today = datetime.utcnow().date()
+    last_checkin_date = player_data.get('last_checkin_date')
+    
+    if last_checkin_date:
+        last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
+        
+        if last_checkin_date == today:
+            # 如果上次签到是今天，返回已经签到的信息
+            return {"message": "Already checked in today."}
+        elif last_checkin_date == today - timedelta(days=1):
+            new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
+        else:
+            new_consecutive_checkins = 1
+    else:
+        new_consecutive_checkins = 1
+
+    # Retrieve check-in rewards based on the type '1' and the number of consecutive check-ins
+    checkin_rewards = get_checkin_data(1)
+    for reward in checkin_rewards:
+        if new_consecutive_checkins >= reward["checkpoint"]:
+            for item in eval(reward["rewards"]):
+                item_id, quantity = item
+                redis_client.hincrby(f"{player_name}_ITEMS", str(item_id), quantity)
+
+    # Update MongoDB
     db.players.update_one(
         {"name": player_name},
-        {"$set": {"last_login_time": datetime.utcnow()}},
-        upsert=True
+        {"$set": {
+            "last_checkin_date": today.strftime('%Y-%m-%d'),
+            "consecutive_checkins": new_consecutive_checkins
+        }}
     )
-    return JSONResponse(content=load_player_items(player_name))
+
+    update_player_items_to_mongo(player_name)
+    return {"message": "Check-in successful", "consecutive_days": new_consecutive_checkins}
+
+@router.get("/checkin_tasks", summary='Retrieve all checkin tasks from Redis', tags=['Info'])
+async def get_checkin_tasks():
+    """
+    Retrieve all checkin tasks stored in Redis, adapted to the new storage format.
+    """
+    keys = redis_client.keys("checkin:*")
+    checkin_tasks = []
+    
+    for key in keys:
+        type = key.decode('utf-8').split(":")[1]
+        task_data = redis_client.hgetall(key)
+        tasks = []
+        for task_id, value in task_data.items():
+            try:
+                checkpoint, rewards = value.decode('utf-8').split(':')
+                checkpoint_int = int(checkpoint)
+            except ValueError:
+                continue  # Skip this iteration if conversion to int fails
+            task = {
+                "type": type,
+                "task_id": int(task_id),
+                "checkpoint": checkpoint_int,
+                "rewards": rewards
+            }
+            tasks.append(task)
+        checkin_tasks.extend(tasks)
+    return {"checkin_tasks": checkin_tasks}
+
+
+@router.get("/player/{player_name}/consecutive_checkins", summary='Return a int to identify the consecutive_checkins', response_model=int, tags=["Player"])
+async def get_consecutive_checkins(player_name: str):
+    """
+    Retrieve the number of consecutive check-in days for a given player.
+    If no record is found, returns 0.
+    """
+    player_data = db.players.find_one({"name": player_name}, {"consecutive_checkins": 1})
+    
+    if not player_data:
+        return 0  # No record found, return 0
+    
+    return player_data.get('consecutive_checkins', 0)
+
 
 @router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'])
 async def player_entrance_route(request: EntranceRequest):
@@ -334,6 +417,20 @@ async def invite_new_user(request: InviteRequest):
     if existing_invitee or existing_invitee_in_redis:
         return {"message": "Invitee already exists in the database", "status": 0}
 
+    # Set the inviter field for the invitee in MongoDB
+    invitee_collection.update_one(
+        {"name": invitee},
+        {"$set": {"inviter": inviter}},
+        upsert=True
+    )
+
+    # Add the invitee to the inviter's referrals list in MongoDB
+    invitee_collection.update_one(
+        {"name": inviter},
+        {"$push": {"referrals": invitee}},
+        upsert=True
+    )
+
     # 如果 invitee 是新用户，则 inviter 获得 80 tokens，invitee 获得 100 tokens
     redis_client.incrby(f"{inviter}_TOKENS", 80)
     redis_client.incrby(f"{invitee}_TOKENS", 100)
@@ -415,3 +512,78 @@ async def get_tasks(player_name: str):
                     task['remain_time'] = str(refresh_time - time_diff)
 
     return {"tasks": task_list}
+
+@router.get("/tasks/{player_name}/can_claim_tasks", response_model=list, summary="Get list of can claim task IDs for a player", tags = ['Task'])
+async def get_can_claim_tasks(player_name: str):
+    """
+    Retrieve a list of task IDs that the player can claim.
+    """
+    try:
+        can_claim_tasks = redis_client.smembers(f"{player_name}_CANCLAIM")
+        # Decode bytes to string for each task ID
+        can_claim_tasks = [task_id.decode('utf-8') for task_id in can_claim_tasks]
+        return can_claim_tasks
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/tasks/{player_name}/claim_task/{task_id}", summary="Claim a checkin task reward", tags = ['Task'])
+async def claim_task(player_name: str, task_id: str = Path(..., description="The ID of the task to claim")):
+    """
+    Claim a checkin task reward if the task_id is in the player's CANCLAIM set.
+    """
+    # Check if the task_id is in the CANCLAIM set
+    can_claim_tasks = redis_client.smembers(f"{player_name}_CANCLAIM")
+    if task_id.encode('utf-8') not in can_claim_tasks:
+        raise HTTPException(status_code=404, detail="Task ID not claimable or already claimed")
+
+    # Retrieve the task's rewards from a Redis store using the structured key from pre_loads.py
+    task_type = redis_client.hget(f"task:{task_id}", "type")
+    if not task_type:
+        raise HTTPException(status_code=404, detail="Task type not found for given task ID")
+
+    task_info = redis_client.hget(f"checkin:{task_type.decode('utf-8')}", task_id)
+    if not task_info:
+        raise HTTPException(status_code=404, detail="Task info not found")
+    # Decode and split the task info to extract checkpoint and rewards
+    _, rewards_str = task_info.decode('utf-8').split(':')
+    # Evaluate the rewards string to convert it into a dictionary
+    rewards = eval(rewards_str)
+
+    # Use Redis transaction to ensure atomicity
+    with redis_client.pipeline() as pipe:
+        # Update player's items in Redis
+        for item_id, quantity in rewards.items():
+            pipe.hincrby(f"{player_name}_ITEMS", item_id, quantity)
+
+        # Remove the task_id from CANCLAIM and add to CLAIMED
+        pipe.srem(f"{player_name}_CANCLAIM", task_id)
+        pipe.sadd(f"{player_name}_CLAIMED", task_id)
+        
+        # Execute all commands in the batch
+        pipe.execute()
+
+    # Update MongoDB with the new items (synchronize Redis to MongoDB)
+    update_player_items_to_mongo(player_name)
+
+    return {"message": "Task claimed successfully", "rewards": rewards}
+
+@router.get("/tasks/{player_name}/checkin_claim_list", response_model=Type2TaskResponse, summary="Get all type 2 tasks in CANCLAIM and CLAIMED", tags=['Task'])
+async def get_type2_tasks(player_name: str):
+    """
+    Retrieve all type 2 task IDs in CANCLAIM and CLAIMED sets for a given player.
+    """
+    try:
+        # Fetch all task IDs from CANCLAIM and CLAIMED
+        can_claim_tasks = redis_client.smembers(f"{player_name}_CANCLAIM")
+        claimed_tasks = redis_client.smembers(f"{player_name}_CLAIMED")
+
+        # Filter tasks by type 2
+        type2_can_claim = [int(task_id.decode('utf-8')) for task_id in can_claim_tasks if is_type2(task_id.decode('utf-8'))]
+        type2_claimed = [int(task_id.decode('utf-8')) for task_id in claimed_tasks if is_type2(task_id.decode('utf-8'))]
+
+        return {
+            "can_claim": type2_can_claim,
+            "claimed": type2_claimed
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

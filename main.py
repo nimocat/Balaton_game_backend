@@ -1,9 +1,8 @@
 from fastapi import FastAPI
-from routes import router
 from database import db, redis_client
 from routers.admin import admin
 from routers.items import items
-import sys
+from routers.routes import router
 import time
 from contextlib import asynccontextmanager
 import asyncio
@@ -15,6 +14,7 @@ from utils.pre_loads import load_data_from_files
 # CURRENT_GAME_PLAYERS - list
 # CURRENT_GAME_SCORES - zset
 # CURRENT_GAME_POOL - int
+
 def clear_reward_ranking_day():
     redis_client.delete("REWARD_RANKING_DAY")
 
