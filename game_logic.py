@@ -122,6 +122,26 @@ def load_player_to_redis(player_name: str):
     logger.info(f"Player {player_name} loaded to Redis with items: {player_items}")
     return player_items
 
+def load_player_tokens_to_redis(player_name: str) -> bool:
+    # 从 MongoDB 中获取玩家的 tokens 信息
+    player_data = db.players.find_one({"name": player_name}, {"tokens": 1})
+    if not player_data:
+        logger.info(f"Player {player_name} not found in MongoDB")
+        return False
+
+    if 'tokens' not in player_data:
+        logger.info(f"Player {player_name} tokens not found in MongoDB")
+        return True
+
+    # 获取玩家的 tokens 数量
+    player_tokens = player_data['tokens']
+
+    # 将 tokens 信息存储在 Redis 中
+    player_tokens_key = f"{player_name}_TOKENS"
+    redis_client.set(player_tokens_key, player_tokens)
+
+    logger.info(f"Player {player_name} tokens loaded to Redis: {player_tokens}")
+    return True
 
 # 每个player进入游戏时执行
 def player_entrance(player_name, card_num):
@@ -144,13 +164,14 @@ def player_entrance(player_name, card_num):
 
     # 检查玩家的 ITEMS 中的 token 数量是否足够
     player_items_key = f"{player_name}_ITEMS"
-    
+    player_tokens = f"{player_name}_TOKENS"
+
     # 创建一个 Redis 事务（Pipeline）
     with redis_client.pipeline() as pipe:
         while True:
             try:
                 # Watch the keys that will be modified
-                pipe.watch(f"{current_game}_HANDS", f"{current_game}_POOL", f"{player_name}_ITEMS", f"{current_game}_COUNT")
+                pipe.watch(f"{current_game}_HANDS", f"{current_game}_POOL", f"{player_name}_ITEMS", f"{current_game}_COUNT", player_tokens)
 
                 # 开始事务
                 pipe.multi()
@@ -163,11 +184,10 @@ def player_entrance(player_name, card_num):
 
                 # 注意，玩家需要在连接完钱包或者进入界面时，就把他的信息加载到redis中
                 # 将玩家的 ITEMS 中的 token 数量减少相应的 cost
-                tokens = redis_client.hget(player_items_key, "1")
-                if tokens is None or int(tokens) < cost:
+                tokens = redis_client.get(player_tokens)
+                if tokens is None or float(tokens) < cost:
                     return {"error": "Insufficient tokens"}
-                
-                pipe.hincrby(player_items_key, "1", -cost)
+                pipe.incrbyfloat(player_tokens, -cost)
 
                 # 将当前游戏的 COUNT 增加1
                 pipe.incr(f"{current_game}_COUNT")
@@ -314,8 +334,8 @@ def game_execution():
                     pipe.zincrby("REWARD_RANKING_DAY", reward, player)
                     # 为所有奖励不为0的玩家的items id为1的值增加奖励
                     if reward > 0:
-                        player_items_key = f"{player}_ITEMS"
-                        pipe.hincrby(player_items_key, "1", reward)
+                        player_tokens_key = f"{player}_TOKENS"
+                        pipe.incrbyfloat(player_tokens_key, float(reward))
                 pipe.execute()
                 break
             except redis.WatchError:
@@ -348,6 +368,7 @@ def save_current_game_to_mongo(current_game_id, dealer_hand_str, player_hands, r
         player_hand = hand.decode('utf-8')
         player_score = int(redis_client.zscore(f"{current_game_id}_SCORES", player_name.decode('utf-8')))
         player_reward = int(rewards.get(player_name.decode('utf-8'), 0))
+        player_tokens_key = f"{player_name.decode('utf-8')}_TOKENS"
         game_data["players"].append({
             "name": player_name.decode('utf-8'),
             "hand": player_hand,
@@ -389,6 +410,26 @@ def persist_player_items_to_mongo(player_name: str):
         else:
             # 插入新玩家
             new_player = {"name": player_name, "items": player_items}
+            player_collection.insert_one(new_player)
+
+def update_player_tokens_to_mongo(player_name: str):
+    player_tokens_key = f"{player_name}_TOKENS"
+    player_tokens = redis_client.get(player_tokens_key)
+    
+    if player_tokens:
+        # Convert Redis data to float
+        player_tokens = float(player_tokens.decode('utf-8'))
+        
+        # Check if the player exists in MongoDB
+        player_collection = db.players
+        existing_player = player_collection.find_one({"name": player_name})
+        
+        if existing_player:
+            # Update existing player's tokens
+            player_collection.update_one({"name": player_name}, {"$set": {"tokens": player_tokens}})
+        else:
+            # Insert new player with tokens
+            new_player = {"name": player_name, "tokens": player_tokens}
             player_collection.insert_one(new_player)
 
 def check_task_completion(player_task_record, refresh_hours):

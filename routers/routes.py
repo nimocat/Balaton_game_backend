@@ -150,7 +150,7 @@ async def get_game_info():
         pool_amount = int(pool_amount)
 
     # 获取玩家数量
-    player_count_key = f"{current_game_id}_POOL"
+    player_count_key = f"{current_game_id}_COUNT"
     player_amount = redis_client.get(player_count_key)
     if player_amount is None:
         player_amount = 0
@@ -278,7 +278,10 @@ async def daily_checkin(request: LoginRequest):
         if new_consecutive_checkins >= reward["checkpoint"]:
             for item in eval(reward["rewards"]):
                 item_id, quantity = item
-                redis_client.hincrby(f"{player_name}_ITEMS", str(item_id), quantity)
+                if item_id == 1:
+                    redis_client.incrbyfloat(f"{player_name}_TOKENS", quantity)
+                else:
+                    redis_client.hincrby(f"{player_name}_ITEMS", str(item_id), quantity)
 
     # Update MongoDB
     db.players.update_one(
@@ -340,6 +343,15 @@ async def player_entrance_route(request: EntranceRequest):
     player_name = request.player_name
     payment = request.payment
 
+    current_game_id = redis_client.get("CURRENT_GAME")
+    if current_game_id is None:
+        raise HTTPException(status_code=404, detail="No current game running.")
+    current_game_id = current_game_id.decode('utf-8')
+
+    hands_key = f"{current_game_id}_HANDS"
+    if redis_client.hexists(hands_key, player_name):
+        raise HTTPException(status_code=400, detail="Player already in the game.")
+    
     if payment == 20:
         card_num = 2
     elif payment == 40:
@@ -349,6 +361,19 @@ async def player_entrance_route(request: EntranceRequest):
 
     cards = player_entrance(player_name, card_num)
     return {"message": f"Player {player_name} entered the game with {card_num} cards.", "cards": cards} # 返回手牌
+
+@router.get("/player/{player_name}/tokens", response_model=int, summary='Get the player tokens', tags=['Player'])
+async def get_player_tokens(player_name: str):
+    """
+    Retrieve the number of tokens for a given player from Redis.
+    """
+    player_tokens_key = f"{player_name}_TOKENS"
+    tokens = redis_client.get(player_tokens_key)
+    
+    if tokens is None:
+        raise HTTPException(status_code=404, detail="Player tokens not found")
+    
+    return float(tokens)
 
 @router.get("/players/{player_name}/items",response_model=PlayerItemsResponse, summary='Get the player items', tags=['Player'])
 async def get_player_items(player_name: str):
@@ -404,18 +429,58 @@ async def get_player_history(player_name: str):
         })
 
     return {"player_name": player_name, "history": formatted_history}
+
  # Tasks
 @router.post("/tasks/invite", summary='Invoke when invite link has been clicked', tags=['Task'])
 async def invite_new_user(request: InviteRequest):
     inviter = request.inviter
     invitee = request.invitee
     
+    INVITEE_REWARD = 100
+    INVITER_REWARD = 80
     invitee_collection = db.players
     existing_invitee = invitee_collection.find_one({"name": invitee})
     existing_invitee_in_redis = redis_client.hgetall(f"{invitee}_ITEMS")
 
     if existing_invitee or existing_invitee_in_redis:
-        return {"message": "Invitee already exists in the database", "status": 0}
+        return {"message": "Invitee already exists in the database", "status_code": 404}
+
+    inviter_data = invitee_collection.find_one({"name": inviter})
+    if inviter_data:
+        referrals = inviter_data.get("referrals", [])
+        if len(referrals) >= 10:
+            return {"status_code": 404, "message": "Inviter has reached the maximum number of referrals"}
+
+    # 如果 invitee 是新用户，则 inviter 获得 80 tokens，invitee 获得 100 tokens
+    redis_client.incrby(f"{inviter}_TOKENS", INVITER_REWARD)
+    redis_client.incrby(f"{invitee}_TOKENS", INVITEE_REWARD)
+
+    # 处理邀请人的父节点，和邀请人的祖父节点
+    # Retrieve the inviter's inviter (grand-inviter) from the database
+    inviter_data = invitee_collection.find_one({"name": inviter})
+    if inviter_data and "inviter" in inviter_data:
+        grand_inviter = inviter_data["inviter"]
+        # Calculate rewards for inviter's inviter (grand-inviter)
+        grand_inviter_reward = INVITER_REWARD * 0.1
+        
+        # Check if grand_inviter's tokens exist in Redis, if not load from MongoDB
+        grand_inviter_tokens_key = f"{grand_inviter}_TOKENS"
+        if not redis_client.exists(grand_inviter_tokens_key):
+            load_player_tokens_to_redis(grand_inviter)
+        redis_client.incrbyfloat(grand_inviter_tokens_key, float(grand_inviter_reward))
+
+        # Retrieve the grand-inviter's inviter (great-grand-inviter) from the database
+        grand_inviter_data = invitee_collection.find_one({"name": grand_inviter})
+        if grand_inviter_data and "inviter" in grand_inviter_data:
+            great_grand_inviter = grand_inviter_data["inviter"]
+            # Calculate rewards for grand-inviter's inviter (great-grand-inviter)
+            great_grand_inviter_reward = INVITER_REWARD * 0.025
+            
+            # Check if great_grand_inviter's tokens exist in Redis, if not load from MongoDB
+            great_grand_inviter_tokens_key = f"{great_grand_inviter}_TOKENS"
+            if not redis_client.exists(great_grand_inviter_tokens_key):
+                load_player_tokens_to_redis(great_grand_inviter)
+            redis_client.incrbyfloat(great_grand_inviter_tokens_key, float(great_grand_inviter_reward))
 
     # Set the inviter field for the invitee in MongoDB
     invitee_collection.update_one(
@@ -431,13 +496,9 @@ async def invite_new_user(request: InviteRequest):
         upsert=True
     )
 
-    # 如果 invitee 是新用户，则 inviter 获得 80 tokens，invitee 获得 100 tokens
-    redis_client.incrby(f"{inviter}_TOKENS", 80)
-    redis_client.incrby(f"{invitee}_TOKENS", 100)
-
     # 将 Redis 数据持久化到 MongoDB 中
-    update_player_items_to_mongo(inviter)
-    update_player_items_to_mongo(invitee)
+    update_player_tokens_to_mongo(inviter)
+    update_player_tokens_to_mongo(invitee)
 
     return {"message": f"Inviter {inviter} received 80 tokens. New invitee {invitee} received 100 tokens.", "status": 1}
 
@@ -479,7 +540,7 @@ async def share_to_group(sharer: str):
     redis_client.incrby(f"{sharer}_TOKENS", 60)
 
     # 将 Redis 数据持久化到 MongoDB 中
-    persist_player_items_to_mongo(sharer)
+    update_player_tokens_to_mongo(sharer)
 
     return {"message": f"Sharer {sharer} received 60 tokens for sharing to a group."}
 
@@ -553,7 +614,10 @@ async def claim_task(player_name: str, task_id: str = Path(..., description="The
     with redis_client.pipeline() as pipe:
         # Update player's items in Redis
         for item_id, quantity in rewards.items():
-            pipe.hincrby(f"{player_name}_ITEMS", item_id, quantity)
+            if item_id == 1:
+                pipe.incrbyfloat(f"{player_name}_TOKENS", quantity)
+            else:
+                pipe.hincrby(f"{player_name}_ITEMS", item_id, quantity)
 
         # Remove the task_id from CANCLAIM and add to CLAIMED
         pipe.srem(f"{player_name}_CANCLAIM", task_id)
@@ -564,7 +628,7 @@ async def claim_task(player_name: str, task_id: str = Path(..., description="The
 
     # Update MongoDB with the new items (synchronize Redis to MongoDB)
     update_player_items_to_mongo(player_name)
-
+    update_player_tokens_to_mongo(player_name)
     return {"message": "Task claimed successfully", "rewards": rewards}
 
 @router.get("/tasks/{player_name}/checkin_claim_list", response_model=Type2TaskResponse, summary="Get all type 2 tasks in CANCLAIM and CLAIMED", tags=['Task'])

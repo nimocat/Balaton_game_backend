@@ -111,8 +111,8 @@ def game_execution():
     top_10_percent_index = max(1, math.floor(num_players * 0.1))
     top_25_percent_index = max(1, math.floor(num_players * 0.25))
     prize_pool = int(redis_client.get(f"{current_game_id}_POOL") or 0)
-    top_10_percent_reward = int(prize_pool * 0.5 / top_10_percent_index) if top_10_percent_index > 0 else 0
-    top_10_to_25_percent_reward = int(prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index)) if top_25_percent_index > top_10_percent_index else 0
+    top_10_percent_reward = float(prize_pool * 0.5 / top_10_percent_index) if top_10_percent_index > 0 else 0
+    top_10_to_25_percent_reward = float(prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index)) if top_25_percent_index > top_10_percent_index else 0
 
     rewards = {}
     for i, (player_name, player_score) in enumerate(player_scores):
@@ -136,8 +136,8 @@ def game_execution():
                     pipe.zincrby("REWARD_RANKING_DAY", reward, player)
                     # 为所有奖励不为0的玩家的items id为1的值增加奖励
                     if reward > 0:
-                        player_items_key = f"{player}_ITEMS"
-                        pipe.hincrby(player_items_key, "1", reward)
+                        player_tokens_key = f"{player}_TOKENS"
+                        pipe.incrbyfloat(player_tokens_key, reward)
                 pipe.execute()
                 break
             except redis.WatchError:
@@ -148,12 +148,27 @@ def game_execution():
     
     # 异步保存游戏数据到 MongoDB
     threading.Thread(target=save_current_game_to_mongo, args=(current_game_id, dealer_hand_str, player_hands, rewards, prize_pool)).start()
+    # 更新所有玩家的_TOKENS信息到MongoDB
 
+    def update_player_tokens():
+        for player_name, _ in player_scores:
+            player_tokens_key = f"{player_name}_TOKENS"
+            tokens = redis_client.get(player_tokens_key)
+            if tokens is not None:
+                db.players.update_one(
+                    {"name": player_name},
+                    {"$set": {"tokens": float(tokens)}},
+                    upsert=True
+                )
+                logger.info(f"Updated MongoDB with {player_name}'s tokens: {tokens}")
+
+    threading.Thread(target=update_player_tokens).start()
+    
     # 打印结果
     for player_name, hand in player_hands.items():
         player_hand = hand.decode('utf-8') # 从JSON字符串解析为列表
         player_score = int(redis_client.zscore(scores_key, player_name.decode('utf-8')))
-        player_reward = int(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
+        player_reward = float(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score} and reward {player_reward}")
 
 def countdown_expiry_listener():

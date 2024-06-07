@@ -3,3 +3,846 @@
 2024-06-07 17:38:00,788 - game_logic - INFO - Player BlakeSeow's info is in Redis, fetch from Redis
 2024-06-07 17:39:38,485 - game_logic - INFO - Player BlakeSeow entering game with 3 Pokers
 2024-06-07 17:39:38,487 - game_logic - INFO - Player BlakeSeow finished enter game, data updated to Redis
+2024-06-07 21:36:46,040 - __main__ - INFO - Game ID: 20240607133646039877 Generated, New Game Start
+2024-06-07 22:20:42,387 - game_logic - INFO - Player James's info is in Redis, fetch from Redis
+2024-06-07 22:20:53,574 - game_logic - INFO - Player Nimocat's info is not in Redis, fetch from Database
+2024-06-07 22:20:53,609 - game_logic - INFO - Player Nimocat has no items to load into Redis
+2024-06-07 22:21:41,425 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:21:52,555 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:21:53,321 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:22:09,478 - __main__ - INFO - Game ID: 20240607142209478134 Generated, New Game Start
+2024-06-07 22:22:24,951 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:22:24,952 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:22:59,210 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:23:22,473 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:23:22,473 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:26:06,587 - __main__ - INFO - Game ID: 20240607142606586949 Generated, New Game Start
+2024-06-07 22:27:53,904 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:27:53,905 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:27:59,973 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:27:59,973 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:28:06,602 - __main__ - INFO - Game ID: b'20240607142606586949' executing
+2024-06-07 22:28:06,602 - __main__ - INFO - Game ID: b'20240607142606586949' executing
+2024-06-07 22:28:06,602 - __main__ - INFO - Dealer's hand ['D5', 'S8', 'C2', 'S4', 'D2'] string
+2024-06-07 22:28:06,602 - __main__ - INFO - Dealer's hand ['DT', 'C8', 'DA', 'C6', 'C9'] string
+2024-06-07 22:28:06,606 - __main__ - INFO - Dealer's hand ['D5', 'S8', 'C2', 'S4', 'D2'] added to game 20240607142606586949
+2024-06-07 22:28:06,606 - __main__ - INFO - Dealer's hand ['DT', 'C8', 'DA', 'C6', 'C9'] added to game 20240607142606586949
+2024-06-07 22:28:06,606 - __main__ - INFO - Player James's best hand ['DJ', 'HJ', 'C3'] with score 2
+2024-06-07 22:28:06,606 - __main__ - INFO - Player James's best hand ['DJ', 'HJ', 'C3'] with score 2
+2024-06-07 22:28:06,606 - __main__ - INFO - Player Nimocat's best hand ['CJ', 'ST', 'S2'] with score 2
+2024-06-07 22:28:06,606 - __main__ - INFO - Player Nimocat's best hand ['CJ', 'ST', 'S2'] with score 2
+2024-06-07 22:28:06,608 - __main__ - INFO - Player James's best hand ['DJ', 'HJ', 'C3'] with score 2 and reward 40
+2024-06-07 22:28:06,608 - __main__ - INFO - Player Nimocat's best hand ['CJ', 'ST', 'S2'] with score 2 and reward 0
+2024-06-07 22:28:06,608 - __main__ - INFO - Player James's best hand ['DJ', 'HJ', 'C3'] with score 2 and reward 40
+2024-06-07 22:28:06,609 - __main__ - INFO - Player Nimocat's best hand ['CJ', 'ST', 'S2'] with score 2 and reward 0
+2024-06-07 22:28:06,609 - __main__ - INFO - Game ID: 20240607142806608897 Generated, New Game Start
+2024-06-07 22:28:06,609 - __main__ - INFO - Game ID: 20240607142806609242 Generated, New Game Start
+2024-06-07 22:29:21,571 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:29:21,571 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:29:28,335 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:29:28,336 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:29:30,498 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:29:30,498 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:29:32,647 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:29:32,648 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:29:33,627 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:29:33,628 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:29:34,202 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:29:34,203 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:30:06,693 - __main__ - INFO - Game ID: b'20240607142806609242' executing
+2024-06-07 22:30:06,693 - __main__ - INFO - Game ID: b'20240607142806609242' executing
+2024-06-07 22:30:06,693 - __main__ - INFO - Dealer's hand ['DJ', 'C9', 'SQ', 'C4', 'D8'] string
+2024-06-07 22:30:06,693 - __main__ - INFO - Dealer's hand ['D7', 'S9', 'HQ', 'H9', 'C4'] string
+2024-06-07 22:30:06,695 - __main__ - INFO - Dealer's hand ['DJ', 'C9', 'SQ', 'C4', 'D8'] added to game 20240607142806609242
+2024-06-07 22:30:06,695 - __main__ - INFO - Dealer's hand ['D7', 'S9', 'HQ', 'H9', 'C4'] added to game 20240607142806609242
+2024-06-07 22:30:06,695 - __main__ - INFO - Player James's best hand ['C5', 'S6', 'DJ'] with score 2
+2024-06-07 22:30:06,695 - __main__ - INFO - Player James's best hand ['C5', 'S6', 'DJ'] with score 2
+2024-06-07 22:30:06,697 - __main__ - INFO - Player James's best hand ['C5', 'S6', 'DJ'] with score 2 and reward 120
+2024-06-07 22:30:06,697 - __main__ - INFO - Player James's best hand ['C5', 'S6', 'DJ'] with score 2 and reward 120
+2024-06-07 22:30:06,697 - __main__ - INFO - Game ID: 20240607143006697307 Generated, New Game Start
+2024-06-07 22:30:06,697 - __main__ - INFO - Game ID: 20240607143006697543 Generated, New Game Start
+2024-06-07 22:32:06,784 - __main__ - INFO - Game ID: b'20240607143006697543' executing
+2024-06-07 22:32:06,784 - __main__ - INFO - Game ID: b'20240607143006697543' executing
+2024-06-07 22:32:06,784 - __main__ - INFO - Dealer's hand ['S8', 'SA', 'S7', 'D6', 'SJ'] string
+2024-06-07 22:32:06,784 - __main__ - INFO - Dealer's hand ['H2', 'D7', 'S4', 'HQ', 'H7'] string
+2024-06-07 22:32:06,785 - __main__ - INFO - Dealer's hand ['S8', 'SA', 'S7', 'D6', 'SJ'] added to game 20240607143006697543
+2024-06-07 22:32:06,785 - __main__ - INFO - Dealer's hand ['H2', 'D7', 'S4', 'HQ', 'H7'] added to game 20240607143006697543
+2024-06-07 22:32:06,786 - __main__ - INFO - Game ID: 20240607143206786600 Generated, New Game Start
+2024-06-07 22:32:06,787 - __main__ - INFO - Game ID: 20240607143206786685 Generated, New Game Start
+2024-06-07 22:32:33,471 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:32:33,472 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:33:40,729 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:33:40,730 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:34:06,880 - __main__ - INFO - Game ID: b'20240607143206786685' executing
+2024-06-07 22:34:06,880 - __main__ - INFO - Game ID: b'20240607143206786685' executing
+2024-06-07 22:34:06,880 - __main__ - INFO - Dealer's hand ['D5', 'S5', 'CQ', 'SK', 'S7'] string
+2024-06-07 22:34:06,881 - __main__ - INFO - Dealer's hand ['H3', 'H8', 'D4', 'SK', 'CA'] string
+2024-06-07 22:34:06,884 - __main__ - INFO - Dealer's hand ['D5', 'S5', 'CQ', 'SK', 'S7'] added to game 20240607143206786685
+2024-06-07 22:34:06,884 - __main__ - INFO - Player Nimocat's best hand ['D6', 'H8', 'H6'] with score 3
+2024-06-07 22:34:06,884 - __main__ - INFO - Player James's best hand ['HJ', 'H8', 'HK'] with score 3
+2024-06-07 22:34:06,885 - __main__ - INFO - Player Nimocat's best hand ['D6', 'H8', 'H6'] with score 3 and reward 40
+2024-06-07 22:34:06,886 - __main__ - INFO - Player James's best hand ['HJ', 'H8', 'HK'] with score 3 and reward 0
+2024-06-07 22:34:06,886 - __main__ - INFO - Game ID: 20240607143406886538 Generated, New Game Start
+2024-06-07 22:34:06,887 - __main__ - INFO - Dealer's hand ['H3', 'H8', 'D4', 'SK', 'CA'] added to game 20240607143206786685
+2024-06-07 22:34:06,887 - __main__ - INFO - Player Nimocat's best hand ['D6', 'H8', 'H6'] with score 3
+2024-06-07 22:34:06,887 - __main__ - INFO - Player James's best hand ['HJ', 'H8', 'HK'] with score 7
+2024-06-07 22:34:06,889 - __main__ - INFO - Player Nimocat's best hand ['D6', 'H8', 'H6'] with score 3 and reward 0
+2024-06-07 22:34:06,889 - __main__ - INFO - Player James's best hand ['HJ', 'H8', 'HK'] with score 7 and reward 40
+2024-06-07 22:34:06,890 - __main__ - INFO - Game ID: 20240607143406889831 Generated, New Game Start
+2024-06-07 22:36:06,983 - __main__ - INFO - Game ID: b'20240607143406889831' executing
+2024-06-07 22:36:06,983 - __main__ - INFO - Game ID: b'20240607143406889831' executing
+2024-06-07 22:36:06,983 - __main__ - INFO - Dealer's hand ['SK', 'C5', 'S5', 'C6', 'HK'] string
+2024-06-07 22:36:06,983 - __main__ - INFO - Dealer's hand ['C4', 'CQ', 'C8', 'S3', 'D3'] string
+2024-06-07 22:36:06,984 - __main__ - INFO - Dealer's hand ['C4', 'CQ', 'C8', 'S3', 'D3'] added to game 20240607143406889831
+2024-06-07 22:36:06,984 - __main__ - INFO - Dealer's hand ['SK', 'C5', 'S5', 'C6', 'HK'] added to game 20240607143406889831
+2024-06-07 22:36:06,985 - __main__ - INFO - Game ID: 20240607143606985508 Generated, New Game Start
+2024-06-07 22:36:06,986 - __main__ - INFO - Game ID: 20240607143606986026 Generated, New Game Start
+2024-06-07 22:36:55,612 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:36:55,612 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:36:58,970 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:36:58,971 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:38:07,086 - __main__ - INFO - Game ID: b'20240607143606986026' executing
+2024-06-07 22:38:07,086 - __main__ - INFO - Dealer's hand ['CJ', 'HQ', 'H9', 'H8', 'RJ'] string
+2024-06-07 22:38:07,086 - __main__ - INFO - Game ID: b'20240607143606986026' executing
+2024-06-07 22:38:07,087 - __main__ - INFO - Dealer's hand ['CK', 'CT', 'DT', 'S5', 'H3'] string
+2024-06-07 22:38:07,090 - __main__ - INFO - Dealer's hand ['CK', 'CT', 'DT', 'S5', 'H3'] added to game 20240607143606986026
+2024-06-07 22:38:07,091 - __main__ - INFO - Player James's best hand ['D7', 'D2', 'S7'] with score 3
+2024-06-07 22:38:07,091 - __main__ - INFO - Player Nimocat's best hand ['CQ', 'HA', 'H3'] with score 3
+2024-06-07 22:38:07,092 - __main__ - INFO - Player James's best hand ['D7', 'D2', 'S7'] with score 3 and reward 40.0
+2024-06-07 22:38:07,092 - __main__ - INFO - Player Nimocat's best hand ['CQ', 'HA', 'H3'] with score 3 and reward 0.0
+2024-06-07 22:38:07,093 - __main__ - INFO - Game ID: 20240607143807092995 Generated, New Game Start
+2024-06-07 22:38:07,102 - __main__ - INFO - Dealer's hand ['CJ', 'HQ', 'H9', 'H8', 'RJ'] added to game 20240607143606986026
+2024-06-07 22:38:07,102 - __main__ - INFO - Player James's best hand ['D7', 'D2', 'S7'] with score 5
+2024-06-07 22:38:07,102 - __main__ - INFO - Player Nimocat's best hand ['CQ', 'HA', 'H3'] with score 7
+2024-06-07 22:38:07,103 - __main__ - INFO - Player James's best hand ['D7', 'D2', 'S7'] with score 5 and reward 0
+2024-06-07 22:38:07,103 - __main__ - INFO - Player Nimocat's best hand ['CQ', 'HA', 'H3'] with score 7 and reward 40
+2024-06-07 22:38:07,104 - __main__ - INFO - Game ID: 20240607143807103879 Generated, New Game Start
+2024-06-07 22:38:34,051 - game_logic - INFO - Player Nimocat entering game with 3 Pokers
+2024-06-07 22:38:34,052 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:38:39,750 - game_logic - INFO - Player James entering game with 3 Pokers
+2024-06-07 22:38:39,751 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:38:45,839 - game_logic - INFO - Player JohnDoe's info is in Redis, fetch from Redis
+2024-06-07 22:39:14,604 - game_logic - INFO - Player JohnDoe entering game with 2 Pokers
+2024-06-07 22:39:14,605 - game_logic - INFO - Player JohnDoe finished enter game, data updated to Redis
+2024-06-07 22:40:07,180 - __main__ - INFO - Game ID: b'20240607143807103879' executing
+2024-06-07 22:40:07,180 - __main__ - INFO - Game ID: b'20240607143807103879' executing
+2024-06-07 22:40:07,180 - __main__ - INFO - Dealer's hand ['DT', 'S8', 'H5', 'C7', 'H7'] string
+2024-06-07 22:40:07,180 - __main__ - INFO - Dealer's hand ['D7', 'HQ', 'DJ', 'C3', 'C2'] string
+2024-06-07 22:40:07,183 - __main__ - INFO - Dealer's hand ['DT', 'S8', 'H5', 'C7', 'H7'] added to game 20240607143807103879
+2024-06-07 22:40:07,183 - __main__ - INFO - Player Nimocat's best hand ['D4', 'H7', 'DJ'] with score 3
+2024-06-07 22:40:07,183 - __main__ - INFO - Player James's best hand ['C2', 'SA', 'DK'] with score 2
+2024-06-07 22:40:07,184 - __main__ - INFO - Player JohnDoe's best hand ['DJ', 'C6'] with score 2
+2024-06-07 22:40:07,185 - __main__ - INFO - Dealer's hand ['D7', 'HQ', 'DJ', 'C3', 'C2'] added to game 20240607143807103879
+2024-06-07 22:40:07,185 - __main__ - INFO - Player Nimocat's best hand ['D4', 'H7', 'DJ'] with score 3 and reward 50
+2024-06-07 22:40:07,185 - __main__ - INFO - Player Nimocat's best hand ['D4', 'H7', 'DJ'] with score 3
+2024-06-07 22:40:07,185 - __main__ - INFO - Player James's best hand ['C2', 'SA', 'DK'] with score 2 and reward 0
+2024-06-07 22:40:07,185 - __main__ - INFO - Player JohnDoe's best hand ['DJ', 'C6'] with score 2 and reward 0
+2024-06-07 22:40:07,186 - __main__ - INFO - Player James's best hand ['C2', 'SA', 'DK'] with score 2
+2024-06-07 22:40:07,186 - __main__ - INFO - Game ID: 20240607144007186059 Generated, New Game Start
+2024-06-07 22:40:07,186 - __main__ - INFO - Player JohnDoe's best hand ['DJ', 'C6'] with score 2
+2024-06-07 22:40:07,187 - __main__ - INFO - Player Nimocat's best hand ['D4', 'H7', 'DJ'] with score 3 and reward 50.0
+2024-06-07 22:40:07,187 - __main__ - INFO - Player James's best hand ['C2', 'SA', 'DK'] with score 2 and reward 0.0
+2024-06-07 22:40:07,188 - __main__ - INFO - Player JohnDoe's best hand ['DJ', 'C6'] with score 2 and reward 0.0
+2024-06-07 22:40:07,188 - __main__ - INFO - Game ID: 20240607144007188159 Generated, New Game Start
+2024-06-07 22:42:07,269 - __main__ - INFO - Game ID: b'20240607144007188159' executing
+2024-06-07 22:42:07,269 - __main__ - INFO - Game ID: b'20240607144007188159' executing
+2024-06-07 22:42:07,269 - __main__ - INFO - Dealer's hand ['C8', 'S4', 'RJ', 'H4', 'D9'] string
+2024-06-07 22:42:07,269 - __main__ - INFO - Dealer's hand ['C8', 'S4', 'RJ', 'H4', 'D9'] added to game 20240607144007188159
+2024-06-07 22:42:07,270 - __main__ - INFO - Dealer's hand ['SQ', 'D6', 'C8', 'H8', 'DT'] string
+2024-06-07 22:42:07,270 - __main__ - INFO - Dealer's hand ['SQ', 'D6', 'C8', 'H8', 'DT'] added to game 20240607144007188159
+2024-06-07 22:42:07,271 - __main__ - INFO - Game ID: 20240607144207270778 Generated, New Game Start
+2024-06-07 22:42:07,272 - __main__ - INFO - Game ID: 20240607144207272417 Generated, New Game Start
+2024-06-07 22:44:07,361 - __main__ - INFO - Game ID: b'20240607144207272417' executing
+2024-06-07 22:44:07,361 - __main__ - INFO - Game ID: b'20240607144207272417' executing
+2024-06-07 22:44:07,362 - __main__ - INFO - Dealer's hand ['CK', 'HQ', 'CT', 'H5', 'H4'] string
+2024-06-07 22:44:07,362 - __main__ - INFO - Dealer's hand ['BJ', 'SK', 'C8', 'DT', 'CT'] string
+2024-06-07 22:44:07,362 - __main__ - INFO - Dealer's hand ['CK', 'HQ', 'CT', 'H5', 'H4'] added to game 20240607144207272417
+2024-06-07 22:44:07,362 - __main__ - INFO - Dealer's hand ['BJ', 'SK', 'C8', 'DT', 'CT'] added to game 20240607144207272417
+2024-06-07 22:44:07,363 - __main__ - INFO - Game ID: 20240607144407363624 Generated, New Game Start
+2024-06-07 22:44:07,364 - __main__ - INFO - Game ID: 20240607144407363647 Generated, New Game Start
+2024-06-07 22:45:56,323 - game_logic - INFO - Player Nimocat entering game with 2 Pokers
+2024-06-07 22:45:56,325 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:46:07,455 - __main__ - INFO - Game ID: b'20240607144407363647' executing
+2024-06-07 22:46:07,455 - __main__ - INFO - Dealer's hand ['S8', 'CQ', 'C5', 'DA', 'HK'] string
+2024-06-07 22:46:07,455 - __main__ - INFO - Game ID: b'20240607144407363647' executing
+2024-06-07 22:46:07,456 - __main__ - INFO - Dealer's hand ['C4', 'CJ', 'H6', 'S5', 'HT'] string
+2024-06-07 22:46:07,457 - __main__ - INFO - Dealer's hand ['S8', 'CQ', 'C5', 'DA', 'HK'] added to game 20240607144407363647
+2024-06-07 22:46:07,457 - __main__ - INFO - Player Nimocat's best hand ['C6', 'S4'] with score 1
+2024-06-07 22:46:07,459 - __main__ - INFO - Player Nimocat's best hand ['C6', 'S4'] with score 1 and reward 10
+2024-06-07 22:46:07,459 - __main__ - INFO - Game ID: 20240607144607459410 Generated, New Game Start
+2024-06-07 22:46:07,459 - __main__ - INFO - Dealer's hand ['C4', 'CJ', 'H6', 'S5', 'HT'] added to game 20240607144407363647
+2024-06-07 22:46:07,460 - __main__ - INFO - Player Nimocat's best hand ['C6', 'S4'] with score 3
+2024-06-07 22:47:19,494 - game_logic - INFO - Player Nimocat entering game with 2 Pokers
+2024-06-07 22:47:19,495 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:48:07,542 - __main__ - INFO - Game ID: b'20240607144607459410' executing
+2024-06-07 22:48:07,543 - __main__ - INFO - Game ID: b'20240607144607459410' executing
+2024-06-07 22:48:07,543 - __main__ - INFO - Dealer's hand ['BJ', 'DQ', 'C8', 'C3', 'CT'] string
+2024-06-07 22:48:07,543 - __main__ - INFO - Dealer's hand ['H2', 'DA', 'C8', 'RJ', 'HJ'] string
+2024-06-07 22:48:07,549 - __main__ - INFO - Dealer's hand ['BJ', 'DQ', 'C8', 'C3', 'CT'] added to game 20240607144607459410
+2024-06-07 22:48:07,549 - __main__ - INFO - Dealer's hand ['H2', 'DA', 'C8', 'RJ', 'HJ'] added to game 20240607144607459410
+2024-06-07 22:48:07,549 - __main__ - INFO - Player Nimocat's best hand ['HJ', 'CQ'] with score 4
+2024-06-07 22:48:07,550 - __main__ - INFO - Player Nimocat's best hand ['HJ', 'CQ'] with score 4
+2024-06-07 22:48:07,551 - __main__ - INFO - Player Nimocat's best hand ['HJ', 'CQ'] with score 4 and reward 10
+2024-06-07 22:48:07,551 - __main__ - INFO - Game ID: 20240607144807551354 Generated, New Game Start
+2024-06-07 22:50:07,635 - __main__ - INFO - Game ID: b'20240607144807551354' executing
+2024-06-07 22:50:07,635 - __main__ - INFO - Dealer's hand ['HA', 'C5', 'S7', 'C3', 'DK'] string
+2024-06-07 22:50:07,636 - __main__ - INFO - Dealer's hand ['HA', 'C5', 'S7', 'C3', 'DK'] added to game 20240607144807551354
+2024-06-07 22:50:07,637 - __main__ - INFO - Game ID: 20240607145007636815 Generated, New Game Start
+2024-06-07 22:50:46,099 - game_logic - INFO - Player Nimocat entering game with 2 Pokers
+2024-06-07 22:50:46,099 - game_logic - INFO - Player Nimocat finished enter game, data updated to Redis
+2024-06-07 22:50:49,443 - game_logic - INFO - Player James entering game with 2 Pokers
+2024-06-07 22:50:49,443 - game_logic - INFO - Player James finished enter game, data updated to Redis
+2024-06-07 22:50:52,769 - game_logic - INFO - Player Lee entering game with 2 Pokers
+2024-06-07 22:51:13,790 - game_logic - INFO - Player Lee entering game with 2 Pokers
+2024-06-07 22:51:13,791 - game_logic - INFO - Player Lee finished enter game, data updated to Redis
+2024-06-07 22:51:22,402 - game_logic - INFO - Player JohnDoe entering game with 3 Pokers
+2024-06-07 22:51:22,403 - game_logic - INFO - Player JohnDoe finished enter game, data updated to Redis
+2024-06-07 22:52:07,721 - __main__ - INFO - Game ID: b'20240607145007636815' executing
+2024-06-07 22:52:07,721 - __main__ - INFO - Dealer's hand ['DJ', 'C8', 'C3', 'HQ', 'S6'] string
+2024-06-07 22:52:07,721 - __main__ - INFO - Game ID: b'20240607145007636815' executing
+2024-06-07 22:52:07,722 - __main__ - INFO - Dealer's hand ['ST', 'DT', 'S4', 'CJ', 'SQ'] string
+2024-06-07 22:52:07,727 - __main__ - INFO - Dealer's hand ['DJ', 'C8', 'C3', 'HQ', 'S6'] added to game 20240607145007636815
+2024-06-07 22:52:07,727 - __main__ - INFO - Player Nimocat's best hand ['H9', 'S2'] with score 2
+2024-06-07 22:52:07,727 - __main__ - INFO - Player James's best hand ['HJ', 'H3'] with score 3
+2024-06-07 22:52:07,727 - __main__ - INFO - Player Lee's best hand ['D4', 'RJ'] with score 2
+2024-06-07 22:52:07,728 - __main__ - INFO - Player JohnDoe's best hand ['C3', 'D4', 'DT'] with score 2
+2024-06-07 22:52:07,729 - __main__ - INFO - Player Nimocat's best hand ['H9', 'S2'] with score 2 and reward 0
+2024-06-07 22:52:07,729 - __main__ - INFO - Player James's best hand ['HJ', 'H3'] with score 3 and reward 50
+2024-06-07 22:52:07,729 - __main__ - INFO - Player Lee's best hand ['D4', 'RJ'] with score 9 and reward 0
+2024-06-07 22:52:07,730 - __main__ - INFO - Player JohnDoe's best hand ['C3', 'D4', 'DT'] with score 2 and reward 0
+2024-06-07 22:52:07,730 - __main__ - INFO - Game ID: 20240607145207730334 Generated, New Game Start
+2024-06-07 22:52:07,731 - __main__ - INFO - Dealer's hand ['ST', 'DT', 'S4', 'CJ', 'SQ'] added to game 20240607145007636815
+2024-06-07 22:52:07,731 - __main__ - INFO - Player Nimocat's best hand ['H9', 'S2'] with score 2
+2024-06-07 22:52:07,731 - __main__ - INFO - Player James's best hand ['HJ', 'H3'] with score 3
+2024-06-07 22:52:07,731 - __main__ - INFO - Player Lee's best hand ['D4', 'RJ'] with score 9
+2024-06-07 22:52:07,731 - __main__ - INFO - Player JohnDoe's best hand ['C3', 'D4', 'DT'] with score 9
+2024-06-07 22:52:07,733 - __main__ - INFO - Player Nimocat's best hand ['H9', 'S2'] with score 2 and reward 0.0
+2024-06-07 22:52:07,734 - __main__ - INFO - Player James's best hand ['HJ', 'H3'] with score 3 and reward 0.0
+2024-06-07 22:52:07,734 - __main__ - INFO - Player Lee's best hand ['D4', 'RJ'] with score 9 and reward 50.0
+2024-06-07 22:52:07,734 - __main__ - INFO - Player JohnDoe's best hand ['C3', 'D4', 'DT'] with score 9 and reward 0.0
+2024-06-07 22:52:07,735 - __main__ - INFO - Game ID: 20240607145207734786 Generated, New Game Start
+2024-06-07 22:52:08,000 - __main__ - INFO - Updated MongoDB with Lee's tokens: b'2030'
+2024-06-07 22:52:08,045 - __main__ - INFO - Updated MongoDB with JohnDoe's tokens: b'940'
+2024-06-07 22:52:08,090 - __main__ - INFO - Updated MongoDB with James's tokens: b'2900'
+2024-06-07 22:52:08,135 - __main__ - INFO - Updated MongoDB with Nimocat's tokens: b'930'
+2024-06-07 22:53:26,220 - game_logic - INFO - Player Lee entering game with 3 Pokers
+2024-06-07 22:53:26,221 - game_logic - INFO - Player Lee finished enter game, data updated to Redis
+2024-06-07 22:54:07,798 - __main__ - INFO - Game ID: b'20240607145207734786' executing
+2024-06-07 22:54:07,798 - __main__ - INFO - Game ID: b'20240607145207734786' executing
+2024-06-07 22:54:07,798 - __main__ - INFO - Dealer's hand ['D8', 'D3', 'S8', 'HT', 'D5'] string
+2024-06-07 22:54:07,798 - __main__ - INFO - Dealer's hand ['S3', 'D8', 'C7', 'RJ', 'ST'] string
+2024-06-07 22:54:07,799 - __main__ - INFO - Dealer's hand ['D8', 'D3', 'S8', 'HT', 'D5'] added to game 20240607145207734786
+2024-06-07 22:54:07,800 - __main__ - INFO - Player Lee's best hand ['D9', 'C5', 'H9'] with score 3
+2024-06-07 22:54:07,802 - __main__ - INFO - Player Lee's best hand ['D9', 'C5', 'H9'] with score 3 and reward 20.0
+2024-06-07 22:54:07,802 - __main__ - INFO - Game ID: 20240607145407802328 Generated, New Game Start
+2024-06-07 22:54:07,805 - __main__ - INFO - Dealer's hand ['S3', 'D8', 'C7', 'RJ', 'ST'] added to game 20240607145207734786
+2024-06-07 22:54:07,805 - __main__ - INFO - Player Lee's best hand ['D9', 'C5', 'H9'] with score 5
+2024-06-07 22:54:07,806 - __main__ - INFO - Player Lee's best hand ['D9', 'C5', 'H9'] with score 5 and reward 20
+2024-06-07 22:54:07,807 - __main__ - INFO - Game ID: 20240607145407806906 Generated, New Game Start
+2024-06-07 22:54:07,841 - __main__ - INFO - Updated MongoDB with Lee's tokens: b'2110.5'
+2024-06-07 22:56:07,899 - __main__ - INFO - Game ID: b'20240607145407806906' executing
+2024-06-07 22:56:07,899 - __main__ - INFO - Game ID: b'20240607145407806906' executing
+2024-06-07 22:56:07,900 - __main__ - INFO - Dealer's hand ['DA', 'D7', 'DK', 'S8', 'S2'] string
+2024-06-07 22:56:07,900 - __main__ - INFO - Dealer's hand ['DT', 'CJ', 'ST', 'S5', 'C8'] string
+2024-06-07 22:56:07,900 - __main__ - INFO - Dealer's hand ['DT', 'CJ', 'ST', 'S5', 'C8'] added to game 20240607145407806906
+2024-06-07 22:56:07,901 - __main__ - INFO - Dealer's hand ['DA', 'D7', 'DK', 'S8', 'S2'] added to game 20240607145407806906
+2024-06-07 22:56:07,902 - __main__ - INFO - Game ID: 20240607145607901915 Generated, New Game Start
+2024-06-07 22:56:07,903 - __main__ - INFO - Game ID: 20240607145607902943 Generated, New Game Start
+2024-06-07 22:58:07,988 - __main__ - INFO - Game ID: b'20240607145607902943' executing
+2024-06-07 22:58:07,988 - __main__ - INFO - Game ID: b'20240607145607902943' executing
+2024-06-07 22:58:07,989 - __main__ - INFO - Dealer's hand ['S5', 'H9', 'D7', 'HJ', 'H4'] string
+2024-06-07 22:58:07,989 - __main__ - INFO - Dealer's hand ['SK', 'SJ', 'H8', 'D2', 'D5'] string
+2024-06-07 22:58:07,990 - __main__ - INFO - Dealer's hand ['S5', 'H9', 'D7', 'HJ', 'H4'] added to game 20240607145607902943
+2024-06-07 22:58:07,990 - __main__ - INFO - Dealer's hand ['SK', 'SJ', 'H8', 'D2', 'D5'] added to game 20240607145607902943
+2024-06-07 22:58:07,991 - __main__ - INFO - Game ID: 20240607145807991030 Generated, New Game Start
+2024-06-07 22:58:07,992 - __main__ - INFO - Game ID: 20240607145807991740 Generated, New Game Start
+2024-06-07 23:00:08,075 - __main__ - INFO - Game ID: b'20240607145807991740' executing
+2024-06-07 23:00:08,075 - __main__ - INFO - Dealer's hand ['CJ', 'DT', 'H6', 'DJ', 'CA'] string
+2024-06-07 23:00:08,076 - __main__ - INFO - Dealer's hand ['CJ', 'DT', 'H6', 'DJ', 'CA'] added to game 20240607145807991740
+2024-06-07 23:00:08,078 - __main__ - INFO - Game ID: 20240607150008077787 Generated, New Game Start
+2024-06-07 23:00:08,078 - __main__ - INFO - Game ID: b'20240607145807991740' executing
+2024-06-07 23:00:08,079 - __main__ - INFO - Dealer's hand ['SK', 'RJ', 'HA', 'C2', 'D8'] string
+2024-06-07 23:00:08,080 - __main__ - INFO - Dealer's hand ['SK', 'RJ', 'HA', 'C2', 'D8'] added to game 20240607145807991740
+2024-06-07 23:00:08,087 - __main__ - INFO - Game ID: 20240607150008087222 Generated, New Game Start
+2024-06-07 23:02:08,164 - __main__ - INFO - Game ID: b'20240607150008087222' executing
+2024-06-07 23:02:08,164 - __main__ - INFO - Game ID: b'20240607150008087222' executing
+2024-06-07 23:02:08,164 - __main__ - INFO - Dealer's hand ['DT', 'D3', 'C8', 'CA', 'CT'] string
+2024-06-07 23:02:08,164 - __main__ - INFO - Dealer's hand ['HA', 'H6', 'H5', 'D9', 'SA'] string
+2024-06-07 23:02:08,165 - __main__ - INFO - Dealer's hand ['HA', 'H6', 'H5', 'D9', 'SA'] added to game 20240607150008087222
+2024-06-07 23:02:08,165 - __main__ - INFO - Dealer's hand ['DT', 'D3', 'C8', 'CA', 'CT'] added to game 20240607150008087222
+2024-06-07 23:02:08,166 - __main__ - INFO - Game ID: 20240607150208166032 Generated, New Game Start
+2024-06-07 23:02:08,166 - __main__ - INFO - Game ID: 20240607150208166257 Generated, New Game Start
+2024-06-07 23:04:08,255 - __main__ - INFO - Game ID: b'20240607150208166257' executing
+2024-06-07 23:04:08,255 - __main__ - INFO - Game ID: b'20240607150208166257' executing
+2024-06-07 23:04:08,255 - __main__ - INFO - Dealer's hand ['C7', 'DK', 'ST', 'D7', 'C9'] string
+2024-06-07 23:04:08,256 - __main__ - INFO - Dealer's hand ['S8', 'DA', 'H6', 'H2', 'D4'] string
+2024-06-07 23:04:08,256 - __main__ - INFO - Dealer's hand ['C7', 'DK', 'ST', 'D7', 'C9'] added to game 20240607150208166257
+2024-06-07 23:04:08,256 - __main__ - INFO - Dealer's hand ['S8', 'DA', 'H6', 'H2', 'D4'] added to game 20240607150208166257
+2024-06-07 23:04:08,258 - __main__ - INFO - Game ID: 20240607150408258125 Generated, New Game Start
+2024-06-07 23:04:08,259 - __main__ - INFO - Game ID: 20240607150408258523 Generated, New Game Start
+2024-06-07 23:06:08,343 - __main__ - INFO - Game ID: b'20240607150408258523' executing
+2024-06-07 23:06:08,343 - __main__ - INFO - Game ID: b'20240607150408258523' executing
+2024-06-07 23:06:08,343 - __main__ - INFO - Dealer's hand ['D6', 'D4', 'HJ', 'DK', 'C4'] string
+2024-06-07 23:06:08,343 - __main__ - INFO - Dealer's hand ['RJ', 'D3', 'CK', 'DJ', 'H2'] string
+2024-06-07 23:06:08,344 - __main__ - INFO - Dealer's hand ['D6', 'D4', 'HJ', 'DK', 'C4'] added to game 20240607150408258523
+2024-06-07 23:06:08,344 - __main__ - INFO - Dealer's hand ['RJ', 'D3', 'CK', 'DJ', 'H2'] added to game 20240607150408258523
+2024-06-07 23:06:08,345 - __main__ - INFO - Game ID: 20240607150608345350 Generated, New Game Start
+2024-06-07 23:06:08,346 - __main__ - INFO - Game ID: 20240607150608345927 Generated, New Game Start
+2024-06-07 23:08:08,431 - __main__ - INFO - Game ID: b'20240607150608345927' executing
+2024-06-07 23:08:08,431 - __main__ - INFO - Dealer's hand ['D9', 'S2', 'H3', 'C2', 'HJ'] string
+2024-06-07 23:08:08,432 - __main__ - INFO - Game ID: b'20240607150608345927' executing
+2024-06-07 23:08:08,432 - __main__ - INFO - Dealer's hand ['D9', 'S2', 'H3', 'C2', 'HJ'] added to game 20240607150608345927
+2024-06-07 23:08:08,433 - __main__ - INFO - Dealer's hand ['S8', 'D5', 'DK', 'HQ', 'H7'] string
+2024-06-07 23:08:08,434 - __main__ - INFO - Game ID: 20240607150808433655 Generated, New Game Start
+2024-06-07 23:08:08,434 - __main__ - INFO - Dealer's hand ['S8', 'D5', 'DK', 'HQ', 'H7'] added to game 20240607150608345927
+2024-06-07 23:08:08,437 - __main__ - INFO - Game ID: 20240607150808437206 Generated, New Game Start
+2024-06-07 23:10:08,527 - __main__ - INFO - Game ID: b'20240607150808437206' executing
+2024-06-07 23:10:08,527 - __main__ - INFO - Game ID: b'20240607150808437206' executing
+2024-06-07 23:10:08,528 - __main__ - INFO - Dealer's hand ['C4', 'S6', 'CT', 'D2', 'CA'] string
+2024-06-07 23:10:08,528 - __main__ - INFO - Dealer's hand ['H6', 'H5', 'H3', 'C5', 'S2'] string
+2024-06-07 23:10:08,528 - __main__ - INFO - Dealer's hand ['H6', 'H5', 'H3', 'C5', 'S2'] added to game 20240607150808437206
+2024-06-07 23:10:08,528 - __main__ - INFO - Dealer's hand ['C4', 'S6', 'CT', 'D2', 'CA'] added to game 20240607150808437206
+2024-06-07 23:10:08,529 - __main__ - INFO - Game ID: 20240607151008529425 Generated, New Game Start
+2024-06-07 23:10:08,530 - __main__ - INFO - Game ID: 20240607151008529803 Generated, New Game Start
+2024-06-07 23:12:08,618 - __main__ - INFO - Game ID: b'20240607151008529803' executing
+2024-06-07 23:12:08,618 - __main__ - INFO - Game ID: b'20240607151008529803' executing
+2024-06-07 23:12:08,619 - __main__ - INFO - Dealer's hand ['C3', 'H3', 'S3', 'C5', 'DQ'] string
+2024-06-07 23:12:08,619 - __main__ - INFO - Dealer's hand ['D7', 'DA', 'CQ', 'SQ', 'SA'] string
+2024-06-07 23:12:08,620 - __main__ - INFO - Dealer's hand ['C3', 'H3', 'S3', 'C5', 'DQ'] added to game 20240607151008529803
+2024-06-07 23:12:08,620 - __main__ - INFO - Dealer's hand ['D7', 'DA', 'CQ', 'SQ', 'SA'] added to game 20240607151008529803
+2024-06-07 23:12:08,621 - __main__ - INFO - Game ID: 20240607151208621192 Generated, New Game Start
+2024-06-07 23:12:08,621 - __main__ - INFO - Game ID: 20240607151208621576 Generated, New Game Start
+2024-06-07 23:14:08,711 - __main__ - INFO - Game ID: b'20240607151208621576' executing
+2024-06-07 23:14:08,711 - __main__ - INFO - Game ID: b'20240607151208621576' executing
+2024-06-07 23:14:08,711 - __main__ - INFO - Dealer's hand ['HK', 'H9', 'C5', 'H3', 'S3'] string
+2024-06-07 23:14:08,711 - __main__ - INFO - Dealer's hand ['HK', 'S8', 'CJ', 'H8', 'DJ'] string
+2024-06-07 23:14:08,712 - __main__ - INFO - Dealer's hand ['HK', 'H9', 'C5', 'H3', 'S3'] added to game 20240607151208621576
+2024-06-07 23:14:08,712 - __main__ - INFO - Dealer's hand ['HK', 'S8', 'CJ', 'H8', 'DJ'] added to game 20240607151208621576
+2024-06-07 23:14:08,714 - __main__ - INFO - Game ID: 20240607151408713348 Generated, New Game Start
+2024-06-07 23:14:08,714 - __main__ - INFO - Game ID: 20240607151408713860 Generated, New Game Start
+2024-06-07 23:16:08,800 - __main__ - INFO - Game ID: b'20240607151408713860' executing
+2024-06-07 23:16:08,800 - __main__ - INFO - Dealer's hand ['SQ', 'D4', 'D8', 'D2', 'H8'] string
+2024-06-07 23:16:08,800 - __main__ - INFO - Game ID: b'20240607151408713860' executing
+2024-06-07 23:16:08,801 - __main__ - INFO - Dealer's hand ['SQ', 'D4', 'D8', 'D2', 'H8'] added to game 20240607151408713860
+2024-06-07 23:16:08,801 - __main__ - INFO - Dealer's hand ['S7', 'HK', 'S3', 'SK', 'D8'] string
+2024-06-07 23:16:08,801 - __main__ - INFO - Dealer's hand ['S7', 'HK', 'S3', 'SK', 'D8'] added to game 20240607151408713860
+2024-06-07 23:16:08,802 - __main__ - INFO - Game ID: 20240607151608801940 Generated, New Game Start
+2024-06-07 23:16:08,803 - __main__ - INFO - Game ID: 20240607151608803029 Generated, New Game Start
+2024-06-07 23:18:08,894 - __main__ - INFO - Game ID: b'20240607151608803029' executing
+2024-06-07 23:18:08,894 - __main__ - INFO - Game ID: b'20240607151608803029' executing
+2024-06-07 23:18:08,894 - __main__ - INFO - Dealer's hand ['D8', 'DK', 'H4', 'S4', 'S7'] string
+2024-06-07 23:18:08,894 - __main__ - INFO - Dealer's hand ['D3', 'C5', 'CT', 'H4', 'DJ'] string
+2024-06-07 23:18:08,894 - __main__ - INFO - Dealer's hand ['D8', 'DK', 'H4', 'S4', 'S7'] added to game 20240607151608803029
+2024-06-07 23:18:08,894 - __main__ - INFO - Dealer's hand ['D3', 'C5', 'CT', 'H4', 'DJ'] added to game 20240607151608803029
+2024-06-07 23:18:08,896 - __main__ - INFO - Game ID: 20240607151808895692 Generated, New Game Start
+2024-06-07 23:18:08,896 - __main__ - INFO - Game ID: 20240607151808895870 Generated, New Game Start
+2024-06-07 23:20:08,983 - __main__ - INFO - Game ID: b'20240607151808895870' executing
+2024-06-07 23:20:08,983 - __main__ - INFO - Game ID: b'20240607151808895870' executing
+2024-06-07 23:20:08,983 - __main__ - INFO - Dealer's hand ['C9', 'H4', 'D5', 'ST', 'S5'] string
+2024-06-07 23:20:08,983 - __main__ - INFO - Dealer's hand ['CT', 'C8', 'S4', 'C3', 'HQ'] string
+2024-06-07 23:20:08,984 - __main__ - INFO - Dealer's hand ['CT', 'C8', 'S4', 'C3', 'HQ'] added to game 20240607151808895870
+2024-06-07 23:20:08,984 - __main__ - INFO - Dealer's hand ['C9', 'H4', 'D5', 'ST', 'S5'] added to game 20240607151808895870
+2024-06-07 23:20:08,985 - __main__ - INFO - Game ID: 20240607152008985088 Generated, New Game Start
+2024-06-07 23:20:08,985 - __main__ - INFO - Game ID: 20240607152008985349 Generated, New Game Start
+2024-06-07 23:22:09,072 - __main__ - INFO - Game ID: b'20240607152008985349' executing
+2024-06-07 23:22:09,072 - __main__ - INFO - Game ID: b'20240607152008985349' executing
+2024-06-07 23:22:09,072 - __main__ - INFO - Dealer's hand ['S3', 'SJ', 'SA', 'CA', 'C9'] string
+2024-06-07 23:22:09,072 - __main__ - INFO - Dealer's hand ['CK', 'S3', 'C2', 'C7', 'S5'] string
+2024-06-07 23:22:09,073 - __main__ - INFO - Dealer's hand ['S3', 'SJ', 'SA', 'CA', 'C9'] added to game 20240607152008985349
+2024-06-07 23:22:09,075 - __main__ - INFO - Game ID: 20240607152209074800 Generated, New Game Start
+2024-06-07 23:22:09,076 - __main__ - INFO - Dealer's hand ['CK', 'S3', 'C2', 'C7', 'S5'] added to game 20240607152008985349
+2024-06-07 23:22:09,079 - __main__ - INFO - Game ID: 20240607152209079204 Generated, New Game Start
+2024-06-07 23:24:09,160 - __main__ - INFO - Game ID: b'20240607152209079204' executing
+2024-06-07 23:24:09,160 - __main__ - INFO - Game ID: b'20240607152209079204' executing
+2024-06-07 23:24:09,160 - __main__ - INFO - Dealer's hand ['H5', 'HA', 'H3', 'C4', 'SA'] string
+2024-06-07 23:24:09,161 - __main__ - INFO - Dealer's hand ['H5', 'HA', 'H3', 'C4', 'SA'] added to game 20240607152209079204
+2024-06-07 23:24:09,161 - __main__ - INFO - Dealer's hand ['C5', 'H9', 'SJ', 'S9', 'DA'] string
+2024-06-07 23:24:09,162 - __main__ - INFO - Game ID: 20240607152409162309 Generated, New Game Start
+2024-06-07 23:24:09,163 - __main__ - INFO - Dealer's hand ['C5', 'H9', 'SJ', 'S9', 'DA'] added to game 20240607152209079204
+2024-06-07 23:24:09,164 - __main__ - INFO - Game ID: 20240607152409164493 Generated, New Game Start
+2024-06-07 23:26:09,253 - __main__ - INFO - Game ID: b'20240607152409164493' executing
+2024-06-07 23:26:09,253 - __main__ - INFO - Game ID: b'20240607152409164493' executing
+2024-06-07 23:26:09,253 - __main__ - INFO - Dealer's hand ['H7', 'C5', 'D3', 'H6', 'HQ'] string
+2024-06-07 23:26:09,253 - __main__ - INFO - Dealer's hand ['BJ', 'HK', 'S4', 'H3', 'D3'] string
+2024-06-07 23:26:09,254 - __main__ - INFO - Dealer's hand ['BJ', 'HK', 'S4', 'H3', 'D3'] added to game 20240607152409164493
+2024-06-07 23:26:09,254 - __main__ - INFO - Dealer's hand ['H7', 'C5', 'D3', 'H6', 'HQ'] added to game 20240607152409164493
+2024-06-07 23:26:09,255 - __main__ - INFO - Game ID: 20240607152609255398 Generated, New Game Start
+2024-06-07 23:26:09,255 - __main__ - INFO - Game ID: 20240607152609255630 Generated, New Game Start
+2024-06-07 23:28:09,343 - __main__ - INFO - Game ID: b'20240607152609255630' executing
+2024-06-07 23:28:09,343 - __main__ - INFO - Game ID: b'20240607152609255630' executing
+2024-06-07 23:28:09,344 - __main__ - INFO - Dealer's hand ['HT', 'CT', 'SJ', 'C2', 'D5'] string
+2024-06-07 23:28:09,344 - __main__ - INFO - Dealer's hand ['C6', 'S4', 'H5', 'C9', 'H3'] string
+2024-06-07 23:28:09,344 - __main__ - INFO - Dealer's hand ['C6', 'S4', 'H5', 'C9', 'H3'] added to game 20240607152609255630
+2024-06-07 23:28:09,344 - __main__ - INFO - Dealer's hand ['HT', 'CT', 'SJ', 'C2', 'D5'] added to game 20240607152609255630
+2024-06-07 23:28:09,345 - __main__ - INFO - Game ID: 20240607152809345560 Generated, New Game Start
+2024-06-07 23:28:09,346 - __main__ - INFO - Game ID: 20240607152809345851 Generated, New Game Start
+2024-06-07 23:30:09,431 - __main__ - INFO - Game ID: b'20240607152809345851' executing
+2024-06-07 23:30:09,431 - __main__ - INFO - Game ID: b'20240607152809345851' executing
+2024-06-07 23:30:09,431 - __main__ - INFO - Dealer's hand ['C9', 'CT', 'H7', 'S9', 'RJ'] string
+2024-06-07 23:30:09,431 - __main__ - INFO - Dealer's hand ['H6', 'S9', 'C8', 'H2', 'S7'] string
+2024-06-07 23:30:09,431 - __main__ - INFO - Dealer's hand ['H6', 'S9', 'C8', 'H2', 'S7'] added to game 20240607152809345851
+2024-06-07 23:30:09,432 - __main__ - INFO - Dealer's hand ['C9', 'CT', 'H7', 'S9', 'RJ'] added to game 20240607152809345851
+2024-06-07 23:30:09,433 - __main__ - INFO - Game ID: 20240607153009432964 Generated, New Game Start
+2024-06-07 23:30:09,433 - __main__ - INFO - Game ID: 20240607153009433242 Generated, New Game Start
+2024-06-07 23:32:09,519 - __main__ - INFO - Game ID: b'20240607153009433242' executing
+2024-06-07 23:32:09,519 - __main__ - INFO - Game ID: b'20240607153009433242' executing
+2024-06-07 23:32:09,519 - __main__ - INFO - Dealer's hand ['ST', 'D2', 'CA', 'S4', 'S3'] string
+2024-06-07 23:32:09,519 - __main__ - INFO - Dealer's hand ['ST', 'C9', 'S8', 'S2', 'H7'] string
+2024-06-07 23:32:09,520 - __main__ - INFO - Dealer's hand ['ST', 'C9', 'S8', 'S2', 'H7'] added to game 20240607153009433242
+2024-06-07 23:32:09,520 - __main__ - INFO - Dealer's hand ['ST', 'D2', 'CA', 'S4', 'S3'] added to game 20240607153009433242
+2024-06-07 23:32:09,522 - __main__ - INFO - Game ID: 20240607153209521618 Generated, New Game Start
+2024-06-07 23:32:09,522 - __main__ - INFO - Game ID: 20240607153209522096 Generated, New Game Start
+2024-06-07 23:34:09,610 - __main__ - INFO - Game ID: b'20240607153209522096' executing
+2024-06-07 23:34:09,610 - __main__ - INFO - Game ID: b'20240607153209522096' executing
+2024-06-07 23:34:09,610 - __main__ - INFO - Dealer's hand ['RJ', 'CJ', 'SQ', 'HT', 'H4'] string
+2024-06-07 23:34:09,610 - __main__ - INFO - Dealer's hand ['CJ', 'D9', 'H3', 'SK', 'SQ'] string
+2024-06-07 23:34:09,611 - __main__ - INFO - Dealer's hand ['CJ', 'D9', 'H3', 'SK', 'SQ'] added to game 20240607153209522096
+2024-06-07 23:34:09,611 - __main__ - INFO - Dealer's hand ['RJ', 'CJ', 'SQ', 'HT', 'H4'] added to game 20240607153209522096
+2024-06-07 23:34:09,612 - __main__ - INFO - Game ID: 20240607153409612145 Generated, New Game Start
+2024-06-07 23:34:09,613 - __main__ - INFO - Game ID: 20240607153409612519 Generated, New Game Start
+2024-06-07 23:36:09,701 - __main__ - INFO - Game ID: b'20240607153409612519' executing
+2024-06-07 23:36:09,701 - __main__ - INFO - Game ID: b'20240607153409612519' executing
+2024-06-07 23:36:09,701 - __main__ - INFO - Dealer's hand ['SA', 'D6', 'C2', 'H6', 'H2'] string
+2024-06-07 23:36:09,701 - __main__ - INFO - Dealer's hand ['H4', 'S4', 'D7', 'CA', 'DQ'] string
+2024-06-07 23:36:09,702 - __main__ - INFO - Dealer's hand ['H4', 'S4', 'D7', 'CA', 'DQ'] added to game 20240607153409612519
+2024-06-07 23:36:09,702 - __main__ - INFO - Dealer's hand ['SA', 'D6', 'C2', 'H6', 'H2'] added to game 20240607153409612519
+2024-06-07 23:36:09,703 - __main__ - INFO - Game ID: 20240607153609703252 Generated, New Game Start
+2024-06-07 23:36:09,704 - __main__ - INFO - Game ID: 20240607153609703656 Generated, New Game Start
+2024-06-07 23:38:09,791 - __main__ - INFO - Game ID: b'20240607153609703656' executing
+2024-06-07 23:38:09,791 - __main__ - INFO - Game ID: b'20240607153609703656' executing
+2024-06-07 23:38:09,792 - __main__ - INFO - Dealer's hand ['CQ', 'H3', 'D4', 'HT', 'DJ'] string
+2024-06-07 23:38:09,792 - __main__ - INFO - Dealer's hand ['H2', 'D9', 'C8', 'DT', 'SA'] string
+2024-06-07 23:38:09,792 - __main__ - INFO - Dealer's hand ['CQ', 'H3', 'D4', 'HT', 'DJ'] added to game 20240607153609703656
+2024-06-07 23:38:09,792 - __main__ - INFO - Dealer's hand ['H2', 'D9', 'C8', 'DT', 'SA'] added to game 20240607153609703656
+2024-06-07 23:38:09,793 - __main__ - INFO - Game ID: 20240607153809793477 Generated, New Game Start
+2024-06-07 23:38:09,794 - __main__ - INFO - Game ID: 20240607153809793745 Generated, New Game Start
+2024-06-07 23:40:09,880 - __main__ - INFO - Game ID: b'20240607153809793745' executing
+2024-06-07 23:40:09,880 - __main__ - INFO - Game ID: b'20240607153809793745' executing
+2024-06-07 23:40:09,880 - __main__ - INFO - Dealer's hand ['D4', 'S6', 'C5', 'H9', 'SJ'] string
+2024-06-07 23:40:09,880 - __main__ - INFO - Dealer's hand ['CA', 'S5', 'H9', 'D2', 'C7'] string
+2024-06-07 23:40:09,880 - __main__ - INFO - Dealer's hand ['CA', 'S5', 'H9', 'D2', 'C7'] added to game 20240607153809793745
+2024-06-07 23:40:09,880 - __main__ - INFO - Dealer's hand ['D4', 'S6', 'C5', 'H9', 'SJ'] added to game 20240607153809793745
+2024-06-07 23:40:09,882 - __main__ - INFO - Game ID: 20240607154009881755 Generated, New Game Start
+2024-06-07 23:40:09,882 - __main__ - INFO - Game ID: 20240607154009882424 Generated, New Game Start
+2024-06-07 23:42:09,968 - __main__ - INFO - Game ID: b'20240607154009882424' executing
+2024-06-07 23:42:09,968 - __main__ - INFO - Game ID: b'20240607154009882424' executing
+2024-06-07 23:42:09,969 - __main__ - INFO - Dealer's hand ['SK', 'H6', 'C4', 'HA', 'H5'] string
+2024-06-07 23:42:09,969 - __main__ - INFO - Dealer's hand ['D4', 'S2', 'CJ', 'D3', 'H2'] string
+2024-06-07 23:42:09,969 - __main__ - INFO - Dealer's hand ['D4', 'S2', 'CJ', 'D3', 'H2'] added to game 20240607154009882424
+2024-06-07 23:42:09,969 - __main__ - INFO - Dealer's hand ['SK', 'H6', 'C4', 'HA', 'H5'] added to game 20240607154009882424
+2024-06-07 23:42:09,970 - __main__ - INFO - Game ID: 20240607154209970633 Generated, New Game Start
+2024-06-07 23:42:09,971 - __main__ - INFO - Game ID: 20240607154209970872 Generated, New Game Start
+2024-06-07 23:44:10,055 - __main__ - INFO - Game ID: b'20240607154209970872' executing
+2024-06-07 23:44:10,055 - __main__ - INFO - Game ID: b'20240607154209970872' executing
+2024-06-07 23:44:10,055 - __main__ - INFO - Dealer's hand ['H2', 'CT', 'C2', 'D6', 'S9'] string
+2024-06-07 23:44:10,055 - __main__ - INFO - Dealer's hand ['D7', 'H2', 'S3', 'S2', 'H4'] string
+2024-06-07 23:44:10,056 - __main__ - INFO - Dealer's hand ['D7', 'H2', 'S3', 'S2', 'H4'] added to game 20240607154209970872
+2024-06-07 23:44:10,056 - __main__ - INFO - Dealer's hand ['H2', 'CT', 'C2', 'D6', 'S9'] added to game 20240607154209970872
+2024-06-07 23:44:10,057 - __main__ - INFO - Game ID: 20240607154410057022 Generated, New Game Start
+2024-06-07 23:44:10,057 - __main__ - INFO - Game ID: 20240607154410057188 Generated, New Game Start
+2024-06-07 23:46:10,144 - __main__ - INFO - Game ID: b'20240607154410057188' executing
+2024-06-07 23:46:10,144 - __main__ - INFO - Game ID: b'20240607154410057188' executing
+2024-06-07 23:46:10,144 - __main__ - INFO - Dealer's hand ['HK', 'RJ', 'SK', 'H3', 'SQ'] string
+2024-06-07 23:46:10,144 - __main__ - INFO - Dealer's hand ['HK', 'RJ', 'SK', 'H3', 'SQ'] added to game 20240607154410057188
+2024-06-07 23:46:10,145 - __main__ - INFO - Dealer's hand ['DA', 'HK', 'CA', 'CK', 'HQ'] string
+2024-06-07 23:46:10,146 - __main__ - INFO - Game ID: 20240607154610145983 Generated, New Game Start
+2024-06-07 23:46:10,146 - __main__ - INFO - Dealer's hand ['DA', 'HK', 'CA', 'CK', 'HQ'] added to game 20240607154410057188
+2024-06-07 23:46:10,148 - __main__ - INFO - Game ID: 20240607154610147805 Generated, New Game Start
+2024-06-07 23:48:10,231 - __main__ - INFO - Game ID: b'20240607154610147805' executing
+2024-06-07 23:48:10,231 - __main__ - INFO - Game ID: b'20240607154610147805' executing
+2024-06-07 23:48:10,231 - __main__ - INFO - Dealer's hand ['HK', 'D6', 'HJ', 'DJ', 'HT'] string
+2024-06-07 23:48:10,231 - __main__ - INFO - Dealer's hand ['CQ', 'C2', 'SK', 'C9', 'H6'] string
+2024-06-07 23:48:10,232 - __main__ - INFO - Dealer's hand ['HK', 'D6', 'HJ', 'DJ', 'HT'] added to game 20240607154610147805
+2024-06-07 23:48:10,233 - __main__ - INFO - Dealer's hand ['CQ', 'C2', 'SK', 'C9', 'H6'] added to game 20240607154610147805
+2024-06-07 23:48:10,233 - __main__ - INFO - Game ID: 20240607154810233361 Generated, New Game Start
+2024-06-07 23:48:10,234 - __main__ - INFO - Game ID: 20240607154810234220 Generated, New Game Start
+2024-06-07 23:50:10,320 - __main__ - INFO - Game ID: b'20240607154810234220' executing
+2024-06-07 23:50:10,320 - __main__ - INFO - Game ID: b'20240607154810234220' executing
+2024-06-07 23:50:10,321 - __main__ - INFO - Dealer's hand ['C5', 'S2', 'H5', 'S4', 'C6'] string
+2024-06-07 23:50:10,321 - __main__ - INFO - Dealer's hand ['C3', 'SQ', 'C9', 'H6', 'DA'] string
+2024-06-07 23:50:10,321 - __main__ - INFO - Dealer's hand ['C5', 'S2', 'H5', 'S4', 'C6'] added to game 20240607154810234220
+2024-06-07 23:50:10,322 - __main__ - INFO - Dealer's hand ['C3', 'SQ', 'C9', 'H6', 'DA'] added to game 20240607154810234220
+2024-06-07 23:50:10,323 - __main__ - INFO - Game ID: 20240607155010322587 Generated, New Game Start
+2024-06-07 23:50:10,323 - __main__ - INFO - Game ID: 20240607155010323532 Generated, New Game Start
+2024-06-07 23:52:10,409 - __main__ - INFO - Game ID: b'20240607155010323532' executing
+2024-06-07 23:52:10,409 - __main__ - INFO - Dealer's hand ['S4', 'H6', 'SK', 'C7', 'H5'] string
+2024-06-07 23:52:10,409 - __main__ - INFO - Game ID: b'20240607155010323532' executing
+2024-06-07 23:52:10,410 - __main__ - INFO - Dealer's hand ['S4', 'H6', 'SK', 'C7', 'H5'] added to game 20240607155010323532
+2024-06-07 23:52:10,410 - __main__ - INFO - Dealer's hand ['S6', 'D3', 'ST', 'H5', 'CT'] string
+2024-06-07 23:52:10,411 - __main__ - INFO - Dealer's hand ['S6', 'D3', 'ST', 'H5', 'CT'] added to game 20240607155010323532
+2024-06-07 23:52:10,411 - __main__ - INFO - Game ID: 20240607155210411117 Generated, New Game Start
+2024-06-07 23:52:10,413 - __main__ - INFO - Game ID: 20240607155210412951 Generated, New Game Start
+2024-06-07 23:54:10,492 - __main__ - INFO - Game ID: b'20240607155210412951' executing
+2024-06-07 23:54:10,492 - __main__ - INFO - Game ID: b'20240607155210412951' executing
+2024-06-07 23:54:10,492 - __main__ - INFO - Dealer's hand ['H3', 'H9', 'S3', 'DK', 'D4'] string
+2024-06-07 23:54:10,493 - __main__ - INFO - Dealer's hand ['C6', 'S7', 'DJ', 'S5', 'DK'] string
+2024-06-07 23:54:10,493 - __main__ - INFO - Dealer's hand ['H3', 'H9', 'S3', 'DK', 'D4'] added to game 20240607155210412951
+2024-06-07 23:54:10,493 - __main__ - INFO - Dealer's hand ['C6', 'S7', 'DJ', 'S5', 'DK'] added to game 20240607155210412951
+2024-06-07 23:54:10,494 - __main__ - INFO - Game ID: 20240607155410494717 Generated, New Game Start
+2024-06-07 23:54:10,495 - __main__ - INFO - Game ID: 20240607155410495228 Generated, New Game Start
+2024-06-07 23:56:10,578 - __main__ - INFO - Game ID: b'20240607155410495228' executing
+2024-06-07 23:56:10,578 - __main__ - INFO - Game ID: b'20240607155410495228' executing
+2024-06-07 23:56:10,579 - __main__ - INFO - Dealer's hand ['D4', 'DT', 'CQ', 'DQ', 'CA'] string
+2024-06-07 23:56:10,579 - __main__ - INFO - Dealer's hand ['SA', 'S3', 'H2', 'D7', 'CQ'] string
+2024-06-07 23:56:10,579 - __main__ - INFO - Dealer's hand ['D4', 'DT', 'CQ', 'DQ', 'CA'] added to game 20240607155410495228
+2024-06-07 23:56:10,580 - __main__ - INFO - Dealer's hand ['SA', 'S3', 'H2', 'D7', 'CQ'] added to game 20240607155410495228
+2024-06-07 23:56:10,581 - __main__ - INFO - Game ID: 20240607155610581039 Generated, New Game Start
+2024-06-07 23:56:10,582 - __main__ - INFO - Game ID: 20240607155610582297 Generated, New Game Start
+2024-06-07 23:58:10,666 - __main__ - INFO - Game ID: b'20240607155610582297' executing
+2024-06-07 23:58:10,666 - __main__ - INFO - Game ID: b'20240607155610582297' executing
+2024-06-07 23:58:10,666 - __main__ - INFO - Dealer's hand ['H9', 'H3', 'C7', 'HT', 'S7'] string
+2024-06-07 23:58:10,666 - __main__ - INFO - Dealer's hand ['C6', 'H8', 'H5', 'H7', 'CT'] string
+2024-06-07 23:58:10,667 - __main__ - INFO - Dealer's hand ['C6', 'H8', 'H5', 'H7', 'CT'] added to game 20240607155610582297
+2024-06-07 23:58:10,667 - __main__ - INFO - Dealer's hand ['H9', 'H3', 'C7', 'HT', 'S7'] added to game 20240607155610582297
+2024-06-07 23:58:10,668 - __main__ - INFO - Game ID: 20240607155810668458 Generated, New Game Start
+2024-06-07 23:58:10,669 - __main__ - INFO - Game ID: 20240607155810669106 Generated, New Game Start
+2024-06-08 00:00:10,756 - __main__ - INFO - Game ID: b'20240607155810669106' executing
+2024-06-08 00:00:10,756 - __main__ - INFO - Game ID: b'20240607155810669106' executing
+2024-06-08 00:00:10,757 - __main__ - INFO - Dealer's hand ['S5', 'S8', 'S7', 'D9', 'RJ'] string
+2024-06-08 00:00:10,757 - __main__ - INFO - Dealer's hand ['D7', 'S3', 'H4', 'RJ', 'S6'] string
+2024-06-08 00:00:10,757 - __main__ - INFO - Dealer's hand ['S5', 'S8', 'S7', 'D9', 'RJ'] added to game 20240607155810669106
+2024-06-08 00:00:10,757 - __main__ - INFO - Dealer's hand ['D7', 'S3', 'H4', 'RJ', 'S6'] added to game 20240607155810669106
+2024-06-08 00:00:10,758 - __main__ - INFO - Game ID: 20240607160010758548 Generated, New Game Start
+2024-06-08 00:00:10,759 - __main__ - INFO - Game ID: 20240607160010758762 Generated, New Game Start
+2024-06-08 00:02:10,851 - __main__ - INFO - Game ID: b'20240607160010758762' executing
+2024-06-08 00:02:10,851 - __main__ - INFO - Game ID: b'20240607160010758762' executing
+2024-06-08 00:02:10,851 - __main__ - INFO - Dealer's hand ['C4', 'DQ', 'CQ', 'DA', 'H4'] string
+2024-06-08 00:02:10,851 - __main__ - INFO - Dealer's hand ['S4', 'ST', 'DJ', 'S2', 'H3'] string
+2024-06-08 00:02:10,852 - __main__ - INFO - Dealer's hand ['C4', 'DQ', 'CQ', 'DA', 'H4'] added to game 20240607160010758762
+2024-06-08 00:02:10,853 - __main__ - INFO - Dealer's hand ['S4', 'ST', 'DJ', 'S2', 'H3'] added to game 20240607160010758762
+2024-06-08 00:02:10,853 - __main__ - INFO - Game ID: 20240607160210853268 Generated, New Game Start
+2024-06-08 00:02:10,855 - __main__ - INFO - Game ID: 20240607160210855054 Generated, New Game Start
+2024-06-08 00:03:45,753 - game_logic - INFO - Player BlakeSeow's info is in Redis, fetch from Redis
+2024-06-08 00:03:53,107 - game_logic - INFO - Player BlakeSeow entering game with 2 Pokers
+2024-06-08 00:04:10,941 - __main__ - INFO - Game ID: b'20240607160210855054' executing
+2024-06-08 00:04:10,941 - __main__ - INFO - Game ID: b'20240607160210855054' executing
+2024-06-08 00:04:10,942 - __main__ - INFO - Dealer's hand ['H4', 'H6', 'S8', 'DA', 'HA'] string
+2024-06-08 00:04:10,942 - __main__ - INFO - Dealer's hand ['CQ', 'SA', 'ST', 'S4', 'H7'] string
+2024-06-08 00:04:10,942 - __main__ - INFO - Dealer's hand ['H4', 'H6', 'S8', 'DA', 'HA'] added to game 20240607160210855054
+2024-06-08 00:04:10,943 - __main__ - INFO - Dealer's hand ['CQ', 'SA', 'ST', 'S4', 'H7'] added to game 20240607160210855054
+2024-06-08 00:04:10,944 - __main__ - INFO - Game ID: 20240607160410943804 Generated, New Game Start
+2024-06-08 00:04:10,944 - __main__ - INFO - Game ID: 20240607160410944378 Generated, New Game Start
+2024-06-08 00:04:20,986 - game_logic - INFO - Player BlakeSeow's info is in Redis, fetch from Redis
+2024-06-08 00:04:25,465 - game_logic - INFO - Player BlakeSeow entering game with 2 Pokers
+2024-06-08 00:04:35,282 - game_logic - INFO - Player BlakeSeow's info is in Redis, fetch from Redis
+2024-06-08 00:04:37,613 - game_logic - INFO - Player BlakeSeow entering game with 2 Pokers
+2024-06-08 00:06:11,031 - __main__ - INFO - Game ID: b'20240607160410944378' executing
+2024-06-08 00:06:11,031 - __main__ - INFO - Game ID: b'20240607160410944378' executing
+2024-06-08 00:06:11,032 - __main__ - INFO - Dealer's hand ['S5', 'H8', 'D7', 'H2', 'H9'] string
+2024-06-08 00:06:11,032 - __main__ - INFO - Dealer's hand ['SA', 'S4', 'H4', 'D8', 'H2'] string
+2024-06-08 00:06:11,032 - __main__ - INFO - Dealer's hand ['S5', 'H8', 'D7', 'H2', 'H9'] added to game 20240607160410944378
+2024-06-08 00:06:11,033 - __main__ - INFO - Dealer's hand ['SA', 'S4', 'H4', 'D8', 'H2'] added to game 20240607160410944378
+2024-06-08 00:06:11,034 - __main__ - INFO - Game ID: 20240607160611033718 Generated, New Game Start
+2024-06-08 00:06:11,034 - __main__ - INFO - Game ID: 20240607160611034624 Generated, New Game Start
+2024-06-08 00:08:11,121 - __main__ - INFO - Game ID: b'20240607160611034624' executing
+2024-06-08 00:08:11,121 - __main__ - INFO - Game ID: b'20240607160611034624' executing
+2024-06-08 00:08:11,121 - __main__ - INFO - Dealer's hand ['C5', 'RJ', 'C7', 'H2', 'H3'] string
+2024-06-08 00:08:11,122 - __main__ - INFO - Dealer's hand ['C5', 'RJ', 'C7', 'H2', 'H3'] added to game 20240607160611034624
+2024-06-08 00:08:11,122 - __main__ - INFO - Dealer's hand ['D2', 'SK', 'DT', 'S3', 'D9'] string
+2024-06-08 00:08:11,123 - __main__ - INFO - Game ID: 20240607160811123255 Generated, New Game Start
+2024-06-08 00:08:11,124 - __main__ - INFO - Dealer's hand ['D2', 'SK', 'DT', 'S3', 'D9'] added to game 20240607160611034624
+2024-06-08 00:08:11,125 - __main__ - INFO - Game ID: 20240607160811125387 Generated, New Game Start
+2024-06-08 00:10:11,220 - __main__ - INFO - Game ID: b'20240607160811125387' executing
+2024-06-08 00:10:11,220 - __main__ - INFO - Game ID: b'20240607160811125387' executing
+2024-06-08 00:10:11,220 - __main__ - INFO - Dealer's hand ['D3', 'H8', 'C7', 'H9', 'CQ'] string
+2024-06-08 00:10:11,220 - __main__ - INFO - Dealer's hand ['C7', 'H2', 'SJ', 'CK', 'CJ'] string
+2024-06-08 00:10:11,221 - __main__ - INFO - Dealer's hand ['C7', 'H2', 'SJ', 'CK', 'CJ'] added to game 20240607160811125387
+2024-06-08 00:10:11,221 - __main__ - INFO - Dealer's hand ['D3', 'H8', 'C7', 'H9', 'CQ'] added to game 20240607160811125387
+2024-06-08 00:10:11,223 - __main__ - INFO - Game ID: 20240607161011222623 Generated, New Game Start
+2024-06-08 00:10:11,223 - __main__ - INFO - Game ID: 20240607161011223241 Generated, New Game Start
+2024-06-08 00:12:11,322 - __main__ - INFO - Game ID: b'20240607161011223241' executing
+2024-06-08 00:12:11,322 - __main__ - INFO - Game ID: b'20240607161011223241' executing
+2024-06-08 00:12:11,322 - __main__ - INFO - Dealer's hand ['DA', 'H7', 'S3', 'C8', 'H6'] string
+2024-06-08 00:12:11,323 - __main__ - INFO - Dealer's hand ['HK', 'CT', 'H9', 'S8', 'C3'] string
+2024-06-08 00:12:11,323 - __main__ - INFO - Dealer's hand ['DA', 'H7', 'S3', 'C8', 'H6'] added to game 20240607161011223241
+2024-06-08 00:12:11,324 - __main__ - INFO - Dealer's hand ['HK', 'CT', 'H9', 'S8', 'C3'] added to game 20240607161011223241
+2024-06-08 00:12:11,325 - __main__ - INFO - Game ID: 20240607161211324427 Generated, New Game Start
+2024-06-08 00:12:11,326 - __main__ - INFO - Game ID: 20240607161211326135 Generated, New Game Start
+2024-06-08 00:14:11,413 - __main__ - INFO - Game ID: b'20240607161211326135' executing
+2024-06-08 00:14:11,413 - __main__ - INFO - Game ID: b'20240607161211326135' executing
+2024-06-08 00:14:11,413 - __main__ - INFO - Dealer's hand ['SK', 'H3', 'D8', 'C3', 'D2'] string
+2024-06-08 00:14:11,413 - __main__ - INFO - Dealer's hand ['H5', 'C7', 'D4', 'H8', 'DT'] string
+2024-06-08 00:14:11,413 - __main__ - INFO - Dealer's hand ['H5', 'C7', 'D4', 'H8', 'DT'] added to game 20240607161211326135
+2024-06-08 00:14:11,413 - __main__ - INFO - Dealer's hand ['SK', 'H3', 'D8', 'C3', 'D2'] added to game 20240607161211326135
+2024-06-08 00:14:11,415 - __main__ - INFO - Game ID: 20240607161411414845 Generated, New Game Start
+2024-06-08 00:14:11,415 - __main__ - INFO - Game ID: 20240607161411415086 Generated, New Game Start
+2024-06-08 00:16:11,509 - __main__ - INFO - Game ID: b'20240607161411415086' executing
+2024-06-08 00:16:11,509 - __main__ - INFO - Game ID: b'20240607161411415086' executing
+2024-06-08 00:16:11,509 - __main__ - INFO - Dealer's hand ['H5', 'C5', 'HK', 'RJ', 'C9'] string
+2024-06-08 00:16:11,510 - __main__ - INFO - Dealer's hand ['S5', 'D8', 'DA', 'H5', 'S4'] string
+2024-06-08 00:16:11,510 - __main__ - INFO - Dealer's hand ['H5', 'C5', 'HK', 'RJ', 'C9'] added to game 20240607161411415086
+2024-06-08 00:16:11,510 - __main__ - INFO - Dealer's hand ['S5', 'D8', 'DA', 'H5', 'S4'] added to game 20240607161411415086
+2024-06-08 00:16:11,512 - __main__ - INFO - Game ID: 20240607161611511905 Generated, New Game Start
+2024-06-08 00:16:11,513 - __main__ - INFO - Game ID: 20240607161611512768 Generated, New Game Start
+2024-06-08 00:18:11,607 - __main__ - INFO - Game ID: b'20240607161611512768' executing
+2024-06-08 00:18:11,607 - __main__ - INFO - Game ID: b'20240607161611512768' executing
+2024-06-08 00:18:11,607 - __main__ - INFO - Dealer's hand ['H3', 'D2', 'D3', 'CA', 'CK'] string
+2024-06-08 00:18:11,607 - __main__ - INFO - Dealer's hand ['DK', 'SJ', 'CJ', 'H3', 'S5'] string
+2024-06-08 00:18:11,607 - __main__ - INFO - Dealer's hand ['DK', 'SJ', 'CJ', 'H3', 'S5'] added to game 20240607161611512768
+2024-06-08 00:18:11,607 - __main__ - INFO - Dealer's hand ['H3', 'D2', 'D3', 'CA', 'CK'] added to game 20240607161611512768
+2024-06-08 00:18:11,609 - __main__ - INFO - Game ID: 20240607161811609487 Generated, New Game Start
+2024-06-08 00:18:11,609 - __main__ - INFO - Game ID: 20240607161811609458 Generated, New Game Start
+2024-06-08 00:20:11,610 - __main__ - INFO - Game ID: b'20240607161811609458' executing
+2024-06-08 00:20:11,610 - __main__ - INFO - Game ID: b'20240607161811609458' executing
+2024-06-08 00:20:11,610 - __main__ - INFO - Dealer's hand ['C8', 'SA', 'D5', 'H3', 'D6'] string
+2024-06-08 00:20:11,610 - __main__ - INFO - Dealer's hand ['DK', 'H7', 'D3', 'HQ', 'SQ'] string
+2024-06-08 00:20:11,611 - __main__ - INFO - Dealer's hand ['DK', 'H7', 'D3', 'HQ', 'SQ'] added to game 20240607161811609458
+2024-06-08 00:20:11,611 - __main__ - INFO - Dealer's hand ['C8', 'SA', 'D5', 'H3', 'D6'] added to game 20240607161811609458
+2024-06-08 00:20:11,612 - __main__ - INFO - Game ID: 20240607162011612180 Generated, New Game Start
+2024-06-08 00:20:11,612 - __main__ - INFO - Game ID: 20240607162011612314 Generated, New Game Start
+2024-06-08 00:22:11,707 - __main__ - INFO - Game ID: b'20240607162011612314' executing
+2024-06-08 00:22:11,707 - __main__ - INFO - Game ID: b'20240607162011612314' executing
+2024-06-08 00:22:11,707 - __main__ - INFO - Dealer's hand ['SK', 'DT', 'C2', 'H7', 'ST'] string
+2024-06-08 00:22:11,707 - __main__ - INFO - Dealer's hand ['DA', 'S3', 'SQ', 'DK', 'D8'] string
+2024-06-08 00:22:11,708 - __main__ - INFO - Dealer's hand ['SK', 'DT', 'C2', 'H7', 'ST'] added to game 20240607162011612314
+2024-06-08 00:22:11,708 - __main__ - INFO - Dealer's hand ['DA', 'S3', 'SQ', 'DK', 'D8'] added to game 20240607162011612314
+2024-06-08 00:22:11,710 - __main__ - INFO - Game ID: 20240607162211709824 Generated, New Game Start
+2024-06-08 00:22:11,711 - __main__ - INFO - Game ID: 20240607162211710838 Generated, New Game Start
+2024-06-08 00:24:11,804 - __main__ - INFO - Game ID: b'20240607162211710838' executing
+2024-06-08 00:24:11,804 - __main__ - INFO - Game ID: b'20240607162211710838' executing
+2024-06-08 00:24:11,804 - __main__ - INFO - Dealer's hand ['C5', 'RJ', 'S6', 'C8', 'D3'] string
+2024-06-08 00:24:11,804 - __main__ - INFO - Dealer's hand ['D2', 'HK', 'SA', 'S2', 'S5'] string
+2024-06-08 00:24:11,805 - __main__ - INFO - Dealer's hand ['C5', 'RJ', 'S6', 'C8', 'D3'] added to game 20240607162211710838
+2024-06-08 00:24:11,805 - __main__ - INFO - Dealer's hand ['D2', 'HK', 'SA', 'S2', 'S5'] added to game 20240607162211710838
+2024-06-08 00:24:11,806 - __main__ - INFO - Game ID: 20240607162411806202 Generated, New Game Start
+2024-06-08 00:24:11,806 - __main__ - INFO - Game ID: 20240607162411806323 Generated, New Game Start
+2024-06-08 00:26:11,896 - __main__ - INFO - Game ID: b'20240607162411806323' executing
+2024-06-08 00:26:11,896 - __main__ - INFO - Game ID: b'20240607162411806323' executing
+2024-06-08 00:26:11,896 - __main__ - INFO - Dealer's hand ['H4', 'H2', 'DQ', 'C3', 'C5'] string
+2024-06-08 00:26:11,896 - __main__ - INFO - Dealer's hand ['H2', 'D6', 'DT', 'D4', 'S4'] string
+2024-06-08 00:26:11,897 - __main__ - INFO - Dealer's hand ['H4', 'H2', 'DQ', 'C3', 'C5'] added to game 20240607162411806323
+2024-06-08 00:26:11,897 - __main__ - INFO - Dealer's hand ['H2', 'D6', 'DT', 'D4', 'S4'] added to game 20240607162411806323
+2024-06-08 00:26:11,898 - __main__ - INFO - Game ID: 20240607162611898209 Generated, New Game Start
+2024-06-08 00:26:11,899 - __main__ - INFO - Game ID: 20240607162611898769 Generated, New Game Start
+2024-06-08 00:28:11,986 - __main__ - INFO - Game ID: b'20240607162611898769' executing
+2024-06-08 00:28:11,986 - __main__ - INFO - Game ID: b'20240607162611898769' executing
+2024-06-08 00:28:11,987 - __main__ - INFO - Dealer's hand ['S9', 'HT', 'HJ', 'CJ', 'SJ'] string
+2024-06-08 00:28:11,987 - __main__ - INFO - Dealer's hand ['RJ', 'SQ', 'D3', 'D2', 'H4'] string
+2024-06-08 00:28:11,987 - __main__ - INFO - Dealer's hand ['RJ', 'SQ', 'D3', 'D2', 'H4'] added to game 20240607162611898769
+2024-06-08 00:28:11,987 - __main__ - INFO - Dealer's hand ['S9', 'HT', 'HJ', 'CJ', 'SJ'] added to game 20240607162611898769
+2024-06-08 00:28:11,989 - __main__ - INFO - Game ID: 20240607162811989268 Generated, New Game Start
+2024-06-08 00:28:11,989 - __main__ - INFO - Game ID: 20240607162811989378 Generated, New Game Start
+2024-06-08 00:30:12,075 - __main__ - INFO - Game ID: b'20240607162811989378' executing
+2024-06-08 00:30:12,075 - __main__ - INFO - Game ID: b'20240607162811989378' executing
+2024-06-08 00:30:12,075 - __main__ - INFO - Dealer's hand ['C3', 'S6', 'DK', 'H7', 'D7'] string
+2024-06-08 00:30:12,075 - __main__ - INFO - Dealer's hand ['D7', 'CQ', 'CK', 'BJ', 'S9'] string
+2024-06-08 00:30:12,075 - __main__ - INFO - Dealer's hand ['C3', 'S6', 'DK', 'H7', 'D7'] added to game 20240607162811989378
+2024-06-08 00:30:12,075 - __main__ - INFO - Dealer's hand ['D7', 'CQ', 'CK', 'BJ', 'S9'] added to game 20240607162811989378
+2024-06-08 00:30:12,077 - __main__ - INFO - Game ID: 20240607163012076754 Generated, New Game Start
+2024-06-08 00:30:12,077 - __main__ - INFO - Game ID: 20240607163012076959 Generated, New Game Start
+2024-06-08 00:32:12,160 - __main__ - INFO - Game ID: b'20240607163012076959' executing
+2024-06-08 00:32:12,160 - __main__ - INFO - Game ID: b'20240607163012076959' executing
+2024-06-08 00:32:12,161 - __main__ - INFO - Dealer's hand ['H7', 'C6', 'SQ', 'C3', 'S7'] string
+2024-06-08 00:32:12,161 - __main__ - INFO - Dealer's hand ['H3', 'S8', 'DQ', 'HJ', 'D5'] string
+2024-06-08 00:32:12,161 - __main__ - INFO - Dealer's hand ['H3', 'S8', 'DQ', 'HJ', 'D5'] added to game 20240607163012076959
+2024-06-08 00:32:12,161 - __main__ - INFO - Dealer's hand ['H7', 'C6', 'SQ', 'C3', 'S7'] added to game 20240607163012076959
+2024-06-08 00:32:12,163 - __main__ - INFO - Game ID: 20240607163212162988 Generated, New Game Start
+2024-06-08 00:32:12,163 - __main__ - INFO - Game ID: 20240607163212163119 Generated, New Game Start
+2024-06-08 00:34:12,251 - __main__ - INFO - Game ID: b'20240607163212163119' executing
+2024-06-08 00:34:12,251 - __main__ - INFO - Game ID: b'20240607163212163119' executing
+2024-06-08 00:34:12,251 - __main__ - INFO - Dealer's hand ['H6', 'H8', 'S4', 'C5', 'C8'] string
+2024-06-08 00:34:12,251 - __main__ - INFO - Dealer's hand ['ST', 'SK', 'SQ', 'CT', 'DA'] string
+2024-06-08 00:34:12,252 - __main__ - INFO - Dealer's hand ['H6', 'H8', 'S4', 'C5', 'C8'] added to game 20240607163212163119
+2024-06-08 00:34:12,252 - __main__ - INFO - Dealer's hand ['ST', 'SK', 'SQ', 'CT', 'DA'] added to game 20240607163212163119
+2024-06-08 00:34:12,253 - __main__ - INFO - Game ID: 20240607163412253298 Generated, New Game Start
+2024-06-08 00:34:12,254 - __main__ - INFO - Game ID: 20240607163412253789 Generated, New Game Start
+2024-06-08 00:36:12,342 - __main__ - INFO - Game ID: b'20240607163412253789' executing
+2024-06-08 00:36:12,342 - __main__ - INFO - Game ID: b'20240607163412253789' executing
+2024-06-08 00:36:12,342 - __main__ - INFO - Dealer's hand ['S9', 'D6', 'DJ', 'S7', 'H6'] string
+2024-06-08 00:36:12,342 - __main__ - INFO - Dealer's hand ['D5', 'C9', 'SJ', 'H2', 'H6'] string
+2024-06-08 00:36:12,343 - __main__ - INFO - Dealer's hand ['S9', 'D6', 'DJ', 'S7', 'H6'] added to game 20240607163412253789
+2024-06-08 00:36:12,343 - __main__ - INFO - Dealer's hand ['D5', 'C9', 'SJ', 'H2', 'H6'] added to game 20240607163412253789
+2024-06-08 00:36:12,344 - __main__ - INFO - Game ID: 20240607163612344383 Generated, New Game Start
+2024-06-08 00:36:12,344 - __main__ - INFO - Game ID: 20240607163612344517 Generated, New Game Start
+2024-06-08 00:38:12,433 - __main__ - INFO - Game ID: b'20240607163612344517' executing
+2024-06-08 00:38:12,433 - __main__ - INFO - Game ID: b'20240607163612344517' executing
+2024-06-08 00:38:12,433 - __main__ - INFO - Dealer's hand ['CA', 'HQ', 'H2', 'H9', 'D9'] string
+2024-06-08 00:38:12,433 - __main__ - INFO - Dealer's hand ['SK', 'C5', 'S9', 'D5', 'S2'] string
+2024-06-08 00:38:12,434 - __main__ - INFO - Dealer's hand ['CA', 'HQ', 'H2', 'H9', 'D9'] added to game 20240607163612344517
+2024-06-08 00:38:12,434 - __main__ - INFO - Dealer's hand ['SK', 'C5', 'S9', 'D5', 'S2'] added to game 20240607163612344517
+2024-06-08 00:38:12,435 - __main__ - INFO - Game ID: 20240607163812435503 Generated, New Game Start
+2024-06-08 00:38:12,436 - __main__ - INFO - Game ID: 20240607163812435771 Generated, New Game Start
+2024-06-08 00:40:12,517 - __main__ - INFO - Game ID: b'20240607163812435771' executing
+2024-06-08 00:40:12,517 - __main__ - INFO - Game ID: b'20240607163812435771' executing
+2024-06-08 00:40:12,518 - __main__ - INFO - Dealer's hand ['H2', 'HT', 'S6', 'D2', 'D5'] string
+2024-06-08 00:40:12,518 - __main__ - INFO - Dealer's hand ['C7', 'C6', 'S8', 'ST', 'H7'] string
+2024-06-08 00:40:12,518 - __main__ - INFO - Dealer's hand ['H2', 'HT', 'S6', 'D2', 'D5'] added to game 20240607163812435771
+2024-06-08 00:40:12,519 - __main__ - INFO - Dealer's hand ['C7', 'C6', 'S8', 'ST', 'H7'] added to game 20240607163812435771
+2024-06-08 00:40:12,520 - __main__ - INFO - Game ID: 20240607164012519734 Generated, New Game Start
+2024-06-08 00:40:12,520 - __main__ - INFO - Game ID: 20240607164012520406 Generated, New Game Start
+2024-06-08 00:42:12,604 - __main__ - INFO - Game ID: b'20240607164012520406' executing
+2024-06-08 00:42:12,604 - __main__ - INFO - Game ID: b'20240607164012520406' executing
+2024-06-08 00:42:12,605 - __main__ - INFO - Dealer's hand ['DQ', 'S3', 'S5', 'D6', 'C4'] string
+2024-06-08 00:42:12,605 - __main__ - INFO - Dealer's hand ['H6', 'S9', 'SQ', 'H7', 'D6'] string
+2024-06-08 00:42:12,605 - __main__ - INFO - Dealer's hand ['H6', 'S9', 'SQ', 'H7', 'D6'] added to game 20240607164012520406
+2024-06-08 00:42:12,605 - __main__ - INFO - Dealer's hand ['DQ', 'S3', 'S5', 'D6', 'C4'] added to game 20240607164012520406
+2024-06-08 00:42:12,607 - __main__ - INFO - Game ID: 20240607164212606742 Generated, New Game Start
+2024-06-08 00:42:12,607 - __main__ - INFO - Game ID: 20240607164212607485 Generated, New Game Start
+2024-06-08 00:44:12,691 - __main__ - INFO - Game ID: b'20240607164212607485' executing
+2024-06-08 00:44:12,691 - __main__ - INFO - Game ID: b'20240607164212607485' executing
+2024-06-08 00:44:12,692 - __main__ - INFO - Dealer's hand ['D5', 'D7', 'S7', 'H3', 'C7'] string
+2024-06-08 00:44:12,692 - __main__ - INFO - Dealer's hand ['H6', 'DK', 'SA', 'H8', 'CJ'] string
+2024-06-08 00:44:12,692 - __main__ - INFO - Dealer's hand ['D5', 'D7', 'S7', 'H3', 'C7'] added to game 20240607164212607485
+2024-06-08 00:44:12,693 - __main__ - INFO - Dealer's hand ['H6', 'DK', 'SA', 'H8', 'CJ'] added to game 20240607164212607485
+2024-06-08 00:44:12,694 - __main__ - INFO - Game ID: 20240607164412693883 Generated, New Game Start
+2024-06-08 00:44:12,694 - __main__ - INFO - Game ID: 20240607164412694735 Generated, New Game Start
+2024-06-08 00:46:12,778 - __main__ - INFO - Game ID: b'20240607164412694735' executing
+2024-06-08 00:46:12,778 - __main__ - INFO - Game ID: b'20240607164412694735' executing
+2024-06-08 00:46:12,778 - __main__ - INFO - Dealer's hand ['CT', 'C6', 'HK', 'D3', 'DA'] string
+2024-06-08 00:46:12,778 - __main__ - INFO - Dealer's hand ['D6', 'S9', 'S6', 'HA', 'SQ'] string
+2024-06-08 00:46:12,778 - __main__ - INFO - Dealer's hand ['CT', 'C6', 'HK', 'D3', 'DA'] added to game 20240607164412694735
+2024-06-08 00:46:12,778 - __main__ - INFO - Dealer's hand ['D6', 'S9', 'S6', 'HA', 'SQ'] added to game 20240607164412694735
+2024-06-08 00:46:12,780 - __main__ - INFO - Game ID: 20240607164612779771 Generated, New Game Start
+2024-06-08 00:46:12,780 - __main__ - INFO - Game ID: 20240607164612780017 Generated, New Game Start
+2024-06-08 00:48:12,865 - __main__ - INFO - Game ID: b'20240607164612780017' executing
+2024-06-08 00:48:12,865 - __main__ - INFO - Game ID: b'20240607164612780017' executing
+2024-06-08 00:48:12,865 - __main__ - INFO - Dealer's hand ['C7', 'S3', 'D3', 'C3', 'H7'] string
+2024-06-08 00:48:12,865 - __main__ - INFO - Dealer's hand ['ST', 'BJ', 'HK', 'S6', 'CQ'] string
+2024-06-08 00:48:12,866 - __main__ - INFO - Dealer's hand ['ST', 'BJ', 'HK', 'S6', 'CQ'] added to game 20240607164612780017
+2024-06-08 00:48:12,866 - __main__ - INFO - Dealer's hand ['C7', 'S3', 'D3', 'C3', 'H7'] added to game 20240607164612780017
+2024-06-08 00:48:12,867 - __main__ - INFO - Game ID: 20240607164812867335 Generated, New Game Start
+2024-06-08 00:48:12,867 - __main__ - INFO - Game ID: 20240607164812867688 Generated, New Game Start
+2024-06-08 00:50:12,952 - __main__ - INFO - Game ID: b'20240607164812867688' executing
+2024-06-08 00:50:12,952 - __main__ - INFO - Game ID: b'20240607164812867688' executing
+2024-06-08 00:50:12,952 - __main__ - INFO - Dealer's hand ['C4', 'S9', 'S3', 'SJ', 'D9'] string
+2024-06-08 00:50:12,952 - __main__ - INFO - Dealer's hand ['H5', 'SJ', 'C9', 'CT', 'DJ'] string
+2024-06-08 00:50:12,952 - __main__ - INFO - Dealer's hand ['H5', 'SJ', 'C9', 'CT', 'DJ'] added to game 20240607164812867688
+2024-06-08 00:50:12,953 - __main__ - INFO - Dealer's hand ['C4', 'S9', 'S3', 'SJ', 'D9'] added to game 20240607164812867688
+2024-06-08 00:50:12,954 - __main__ - INFO - Game ID: 20240607165012953834 Generated, New Game Start
+2024-06-08 00:50:12,954 - __main__ - INFO - Game ID: 20240607165012954066 Generated, New Game Start
+2024-06-08 00:52:13,036 - __main__ - INFO - Game ID: b'20240607165012954066' executing
+2024-06-08 00:52:13,036 - __main__ - INFO - Game ID: b'20240607165012954066' executing
+2024-06-08 00:52:13,036 - __main__ - INFO - Dealer's hand ['CJ', 'BJ', 'HT', 'D2', 'H3'] string
+2024-06-08 00:52:13,036 - __main__ - INFO - Dealer's hand ['H6', 'D8', 'H8', 'D6', 'SJ'] string
+2024-06-08 00:52:13,037 - __main__ - INFO - Dealer's hand ['CJ', 'BJ', 'HT', 'D2', 'H3'] added to game 20240607165012954066
+2024-06-08 00:52:13,037 - __main__ - INFO - Dealer's hand ['H6', 'D8', 'H8', 'D6', 'SJ'] added to game 20240607165012954066
+2024-06-08 00:52:13,038 - __main__ - INFO - Game ID: 20240607165213037852 Generated, New Game Start
+2024-06-08 00:52:13,038 - __main__ - INFO - Game ID: 20240607165213038029 Generated, New Game Start
+2024-06-08 00:54:13,123 - __main__ - INFO - Game ID: b'20240607165213038029' executing
+2024-06-08 00:54:13,123 - __main__ - INFO - Game ID: b'20240607165213038029' executing
+2024-06-08 00:54:13,123 - __main__ - INFO - Dealer's hand ['SJ', 'C9', 'S8', 'HT', 'S9'] string
+2024-06-08 00:54:13,123 - __main__ - INFO - Dealer's hand ['HA', 'CK', 'S5', 'C9', 'SK'] string
+2024-06-08 00:54:13,124 - __main__ - INFO - Dealer's hand ['SJ', 'C9', 'S8', 'HT', 'S9'] added to game 20240607165213038029
+2024-06-08 00:54:13,124 - __main__ - INFO - Dealer's hand ['HA', 'CK', 'S5', 'C9', 'SK'] added to game 20240607165213038029
+2024-06-08 00:54:13,126 - __main__ - INFO - Game ID: 20240607165413125949 Generated, New Game Start
+2024-06-08 00:54:13,126 - __main__ - INFO - Game ID: 20240607165413126117 Generated, New Game Start
+2024-06-08 00:56:13,209 - __main__ - INFO - Game ID: b'20240607165413126117' executing
+2024-06-08 00:56:13,209 - __main__ - INFO - Game ID: b'20240607165413126117' executing
+2024-06-08 00:56:13,209 - __main__ - INFO - Dealer's hand ['ST', 'S2', 'D5', 'C3', 'S3'] string
+2024-06-08 00:56:13,209 - __main__ - INFO - Dealer's hand ['SQ', 'D9', 'D4', 'HQ', 'SK'] string
+2024-06-08 00:56:13,210 - __main__ - INFO - Dealer's hand ['ST', 'S2', 'D5', 'C3', 'S3'] added to game 20240607165413126117
+2024-06-08 00:56:13,210 - __main__ - INFO - Dealer's hand ['SQ', 'D9', 'D4', 'HQ', 'SK'] added to game 20240607165413126117
+2024-06-08 00:56:13,211 - __main__ - INFO - Game ID: 20240607165613211091 Generated, New Game Start
+2024-06-08 00:56:13,212 - __main__ - INFO - Game ID: 20240607165613211789 Generated, New Game Start
+2024-06-08 00:58:13,293 - __main__ - INFO - Game ID: b'20240607165613211789' executing
+2024-06-08 00:58:13,293 - __main__ - INFO - Game ID: b'20240607165613211789' executing
+2024-06-08 00:58:13,294 - __main__ - INFO - Dealer's hand ['D8', 'HJ', 'CQ', 'HK', 'S8'] string
+2024-06-08 00:58:13,294 - __main__ - INFO - Dealer's hand ['DA', 'C6', 'H5', 'S7', 'H3'] string
+2024-06-08 00:58:13,294 - __main__ - INFO - Dealer's hand ['DA', 'C6', 'H5', 'S7', 'H3'] added to game 20240607165613211789
+2024-06-08 00:58:13,294 - __main__ - INFO - Dealer's hand ['D8', 'HJ', 'CQ', 'HK', 'S8'] added to game 20240607165613211789
+2024-06-08 00:58:13,295 - __main__ - INFO - Game ID: 20240607165813295454 Generated, New Game Start
+2024-06-08 00:58:13,295 - __main__ - INFO - Game ID: 20240607165813295599 Generated, New Game Start
+2024-06-08 01:00:13,381 - __main__ - INFO - Game ID: b'20240607165813295599' executing
+2024-06-08 01:00:13,381 - __main__ - INFO - Game ID: b'20240607165813295599' executing
+2024-06-08 01:00:13,381 - __main__ - INFO - Dealer's hand ['H4', 'S5', 'DT', 'S9', 'C9'] string
+2024-06-08 01:00:13,382 - __main__ - INFO - Dealer's hand ['D4', 'SK', 'C7', 'CJ', 'C5'] string
+2024-06-08 01:00:13,382 - __main__ - INFO - Dealer's hand ['H4', 'S5', 'DT', 'S9', 'C9'] added to game 20240607165813295599
+2024-06-08 01:00:13,382 - __main__ - INFO - Dealer's hand ['D4', 'SK', 'C7', 'CJ', 'C5'] added to game 20240607165813295599
+2024-06-08 01:00:13,383 - __main__ - INFO - Game ID: 20240607170013383298 Generated, New Game Start
+2024-06-08 01:00:13,383 - __main__ - INFO - Game ID: 20240607170013383554 Generated, New Game Start
+2024-06-08 01:02:13,468 - __main__ - INFO - Game ID: b'20240607170013383554' executing
+2024-06-08 01:02:13,468 - __main__ - INFO - Game ID: b'20240607170013383554' executing
+2024-06-08 01:02:13,468 - __main__ - INFO - Dealer's hand ['D2', 'HA', 'HJ', 'ST', 'HQ'] string
+2024-06-08 01:02:13,469 - __main__ - INFO - Dealer's hand ['HT', 'CK', 'D9', 'C3', 'C7'] string
+2024-06-08 01:02:13,469 - __main__ - INFO - Dealer's hand ['D2', 'HA', 'HJ', 'ST', 'HQ'] added to game 20240607170013383554
+2024-06-08 01:02:13,470 - __main__ - INFO - Dealer's hand ['HT', 'CK', 'D9', 'C3', 'C7'] added to game 20240607170013383554
+2024-06-08 01:02:13,471 - __main__ - INFO - Game ID: 20240607170213470777 Generated, New Game Start
+2024-06-08 01:02:13,471 - __main__ - INFO - Game ID: 20240607170213471261 Generated, New Game Start
+2024-06-08 01:04:13,555 - __main__ - INFO - Game ID: b'20240607170213471261' executing
+2024-06-08 01:04:13,555 - __main__ - INFO - Game ID: b'20240607170213471261' executing
+2024-06-08 01:04:13,555 - __main__ - INFO - Dealer's hand ['DT', 'S3', 'C7', 'HQ', 'S2'] string
+2024-06-08 01:04:13,555 - __main__ - INFO - Dealer's hand ['C8', 'HA', 'HJ', 'H9', 'D7'] string
+2024-06-08 01:04:13,556 - __main__ - INFO - Dealer's hand ['DT', 'S3', 'C7', 'HQ', 'S2'] added to game 20240607170213471261
+2024-06-08 01:04:13,556 - __main__ - INFO - Dealer's hand ['C8', 'HA', 'HJ', 'H9', 'D7'] added to game 20240607170213471261
+2024-06-08 01:04:13,557 - __main__ - INFO - Game ID: 20240607170413557279 Generated, New Game Start
+2024-06-08 01:04:13,558 - __main__ - INFO - Game ID: 20240607170413557635 Generated, New Game Start
+2024-06-08 01:06:13,642 - __main__ - INFO - Game ID: b'20240607170413557635' executing
+2024-06-08 01:06:13,642 - __main__ - INFO - Game ID: b'20240607170413557635' executing
+2024-06-08 01:06:13,642 - __main__ - INFO - Dealer's hand ['D9', 'HA', 'CJ', 'C6', 'C2'] string
+2024-06-08 01:06:13,643 - __main__ - INFO - Dealer's hand ['H6', 'H9', 'H7', 'ST', 'S9'] string
+2024-06-08 01:06:13,643 - __main__ - INFO - Dealer's hand ['D9', 'HA', 'CJ', 'C6', 'C2'] added to game 20240607170413557635
+2024-06-08 01:06:13,644 - __main__ - INFO - Dealer's hand ['H6', 'H9', 'H7', 'ST', 'S9'] added to game 20240607170413557635
+2024-06-08 01:06:13,644 - __main__ - INFO - Game ID: 20240607170613644338 Generated, New Game Start
+2024-06-08 01:06:13,646 - __main__ - INFO - Game ID: 20240607170613646017 Generated, New Game Start
+2024-06-08 01:08:13,728 - __main__ - INFO - Game ID: b'20240607170613646017' executing
+2024-06-08 01:08:13,728 - __main__ - INFO - Dealer's hand ['D7', 'HA', 'HJ', 'CQ', 'DA'] string
+2024-06-08 01:08:13,729 - __main__ - INFO - Dealer's hand ['D7', 'HA', 'HJ', 'CQ', 'DA'] added to game 20240607170613646017
+2024-06-08 01:08:13,730 - __main__ - INFO - Game ID: 20240607170813730546 Generated, New Game Start
+2024-06-08 01:08:13,731 - __main__ - INFO - Game ID: b'20240607170813730546' executing
+2024-06-08 01:08:13,731 - __main__ - INFO - Dealer's hand ['H5', 'SQ', 'S7', 'D3', 'DQ'] string
+2024-06-08 01:08:13,731 - __main__ - INFO - Dealer's hand ['H5', 'SQ', 'S7', 'D3', 'DQ'] added to game 20240607170813730546
+2024-06-08 01:08:13,736 - __main__ - INFO - Game ID: 20240607170813736135 Generated, New Game Start
+2024-06-08 01:10:13,817 - __main__ - INFO - Game ID: b'20240607170813736135' executing
+2024-06-08 01:10:13,817 - __main__ - INFO - Game ID: b'20240607170813736135' executing
+2024-06-08 01:10:13,817 - __main__ - INFO - Dealer's hand ['DJ', 'CA', 'S9', 'HT', 'S4'] string
+2024-06-08 01:10:13,818 - __main__ - INFO - Dealer's hand ['DJ', 'CA', 'S9', 'HT', 'S4'] added to game 20240607170813736135
+2024-06-08 01:10:13,818 - __main__ - INFO - Dealer's hand ['D5', 'SQ', 'HJ', 'CJ', 'BJ'] string
+2024-06-08 01:10:13,819 - __main__ - INFO - Dealer's hand ['D5', 'SQ', 'HJ', 'CJ', 'BJ'] added to game 20240607170813736135
+2024-06-08 01:10:13,820 - __main__ - INFO - Game ID: 20240607171013819565 Generated, New Game Start
+2024-06-08 01:10:13,821 - __main__ - INFO - Game ID: 20240607171013821317 Generated, New Game Start
+2024-06-08 01:12:13,905 - __main__ - INFO - Game ID: b'20240607171013821317' executing
+2024-06-08 01:12:13,905 - __main__ - INFO - Game ID: b'20240607171013821317' executing
+2024-06-08 01:12:13,905 - __main__ - INFO - Dealer's hand ['S3', 'CJ', 'D6', 'CT', 'D2'] string
+2024-06-08 01:12:13,905 - __main__ - INFO - Dealer's hand ['SA', 'SJ', 'HJ', 'CK', 'C2'] string
+2024-06-08 01:12:13,906 - __main__ - INFO - Dealer's hand ['SA', 'SJ', 'HJ', 'CK', 'C2'] added to game 20240607171013821317
+2024-06-08 01:12:13,907 - __main__ - INFO - Dealer's hand ['S3', 'CJ', 'D6', 'CT', 'D2'] added to game 20240607171013821317
+2024-06-08 01:12:13,908 - __main__ - INFO - Game ID: 20240607171213907681 Generated, New Game Start
+2024-06-08 01:12:13,909 - __main__ - INFO - Game ID: 20240607171213909151 Generated, New Game Start
+2024-06-08 01:14:13,991 - __main__ - INFO - Game ID: b'20240607171213909151' executing
+2024-06-08 01:14:13,991 - __main__ - INFO - Game ID: b'20240607171213909151' executing
+2024-06-08 01:14:13,991 - __main__ - INFO - Dealer's hand ['HQ', 'D7', 'HT', 'D5', 'D8'] string
+2024-06-08 01:14:13,991 - __main__ - INFO - Dealer's hand ['S2', 'DJ', 'CJ', 'H6', 'CK'] string
+2024-06-08 01:14:13,992 - __main__ - INFO - Dealer's hand ['S2', 'DJ', 'CJ', 'H6', 'CK'] added to game 20240607171213909151
+2024-06-08 01:14:13,992 - __main__ - INFO - Dealer's hand ['HQ', 'D7', 'HT', 'D5', 'D8'] added to game 20240607171213909151
+2024-06-08 01:14:13,993 - __main__ - INFO - Game ID: 20240607171413993361 Generated, New Game Start
+2024-06-08 01:14:13,993 - __main__ - INFO - Game ID: 20240607171413993564 Generated, New Game Start
+2024-06-08 01:16:14,085 - __main__ - INFO - Game ID: b'20240607171413993564' executing
+2024-06-08 01:16:14,085 - __main__ - INFO - Game ID: b'20240607171413993564' executing
+2024-06-08 01:16:14,086 - __main__ - INFO - Dealer's hand ['CK', 'DT', 'CQ', 'D5', 'HT'] string
+2024-06-08 01:16:14,086 - __main__ - INFO - Dealer's hand ['S8', 'DK', 'D9', 'S4', 'DJ'] string
+2024-06-08 01:16:14,086 - __main__ - INFO - Dealer's hand ['S8', 'DK', 'D9', 'S4', 'DJ'] added to game 20240607171413993564
+2024-06-08 01:16:14,087 - __main__ - INFO - Dealer's hand ['CK', 'DT', 'CQ', 'D5', 'HT'] added to game 20240607171413993564
+2024-06-08 01:16:14,088 - __main__ - INFO - Game ID: 20240607171614087722 Generated, New Game Start
+2024-06-08 01:16:14,089 - __main__ - INFO - Game ID: 20240607171614088749 Generated, New Game Start
+2024-06-08 01:18:14,175 - __main__ - INFO - Game ID: b'20240607171614088749' executing
+2024-06-08 01:18:14,175 - __main__ - INFO - Game ID: b'20240607171614088749' executing
+2024-06-08 01:18:14,175 - __main__ - INFO - Dealer's hand ['SK', 'HJ', 'BJ', 'S9', 'C2'] string
+2024-06-08 01:18:14,175 - __main__ - INFO - Dealer's hand ['H4', 'D7', 'H8', 'S9', 'C2'] string
+2024-06-08 01:18:14,175 - __main__ - INFO - Dealer's hand ['SK', 'HJ', 'BJ', 'S9', 'C2'] added to game 20240607171614088749
+2024-06-08 01:18:14,175 - __main__ - INFO - Dealer's hand ['H4', 'D7', 'H8', 'S9', 'C2'] added to game 20240607171614088749
+2024-06-08 01:18:14,177 - __main__ - INFO - Game ID: 20240607171814176795 Generated, New Game Start
+2024-06-08 01:18:14,177 - __main__ - INFO - Game ID: 20240607171814176965 Generated, New Game Start
+2024-06-08 01:20:14,265 - __main__ - INFO - Game ID: b'20240607171814176965' executing
+2024-06-08 01:20:14,265 - __main__ - INFO - Game ID: b'20240607171814176965' executing
+2024-06-08 01:20:14,265 - __main__ - INFO - Dealer's hand ['DQ', 'D7', 'SA', 'D8', 'HQ'] string
+2024-06-08 01:20:14,265 - __main__ - INFO - Dealer's hand ['C6', 'HQ', 'BJ', 'S8', 'ST'] string
+2024-06-08 01:20:14,266 - __main__ - INFO - Dealer's hand ['DQ', 'D7', 'SA', 'D8', 'HQ'] added to game 20240607171814176965
+2024-06-08 01:20:14,266 - __main__ - INFO - Dealer's hand ['C6', 'HQ', 'BJ', 'S8', 'ST'] added to game 20240607171814176965
+2024-06-08 01:20:14,267 - __main__ - INFO - Game ID: 20240607172014267298 Generated, New Game Start
+2024-06-08 01:20:14,268 - __main__ - INFO - Game ID: 20240607172014268148 Generated, New Game Start
+2024-06-08 01:22:14,355 - __main__ - INFO - Game ID: b'20240607172014268148' executing
+2024-06-08 01:22:14,355 - __main__ - INFO - Dealer's hand ['D5', 'ST', 'D2', 'H3', 'C5'] string
+2024-06-08 01:22:14,355 - __main__ - INFO - Dealer's hand ['D5', 'ST', 'D2', 'H3', 'C5'] added to game 20240607172014268148
+2024-06-08 01:22:14,356 - __main__ - INFO - Game ID: b'20240607172014268148' executing
+2024-06-08 01:22:14,356 - __main__ - INFO - Dealer's hand ['D2', 'H8', 'SQ', 'C4', 'SK'] string
+2024-06-08 01:22:14,357 - __main__ - INFO - Game ID: 20240607172214356783 Generated, New Game Start
+2024-06-08 01:22:14,357 - __main__ - INFO - Dealer's hand ['D2', 'H8', 'SQ', 'C4', 'SK'] added to game 20240607172014268148
+2024-06-08 01:22:14,359 - __main__ - INFO - Game ID: 20240607172214359107 Generated, New Game Start
+2024-06-08 01:24:14,445 - __main__ - INFO - Game ID: b'20240607172214359107' executing
+2024-06-08 01:24:14,445 - __main__ - INFO - Game ID: b'20240607172214359107' executing
+2024-06-08 01:24:14,446 - __main__ - INFO - Dealer's hand ['H3', 'S5', 'SA', 'D9', 'C6'] string
+2024-06-08 01:24:14,446 - __main__ - INFO - Dealer's hand ['S4', 'C2', 'CA', 'C3', 'H3'] string
+2024-06-08 01:24:14,446 - __main__ - INFO - Dealer's hand ['H3', 'S5', 'SA', 'D9', 'C6'] added to game 20240607172214359107
+2024-06-08 01:24:14,446 - __main__ - INFO - Dealer's hand ['S4', 'C2', 'CA', 'C3', 'H3'] added to game 20240607172214359107
+2024-06-08 01:24:14,448 - __main__ - INFO - Game ID: 20240607172414448178 Generated, New Game Start
+2024-06-08 01:24:14,448 - __main__ - INFO - Game ID: 20240607172414448327 Generated, New Game Start

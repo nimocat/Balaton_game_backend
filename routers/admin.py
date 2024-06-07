@@ -25,11 +25,11 @@ def admin_auth(token: str):
 @admin.post("/faucet", summary="Admin endpoint to add tokens to a player's account", tags=["admin"])
 async def faucet(player_name: str):
     # 检查玩家是否存在于 Redis 中
-    player_items_key = f"{player_name}_ITEMS"
+    player_tokens = f"{player_name}_TOKENS"
 
     # 增加 1000 个 tokens
-    redis_client.hincrby(player_items_key, "1", 1000)
-    new_balance = redis_client.hget(player_items_key, "1").decode('utf-8')
+    redis_client.incrbyfloat(player_tokens, 100.5)
+    new_balance = float(redis_client.get(player_tokens).decode('utf-8'))
     
     logger.info(f"Player {player_name} received 1000 tokens. New balance: {new_balance}")
 
