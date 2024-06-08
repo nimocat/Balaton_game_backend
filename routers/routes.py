@@ -246,7 +246,7 @@ async def user_login(request: LoginRequest):
     player_name = request.player_name
     # Update the player's last login time in MongoDB
     player_hook.login_hook(player_name)
-    return JSONResponse(content=load_player_items(player_name))
+    return JSONResponse(content=load_player_tokens(player_name))
 
 # Player routers
 @router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'])
@@ -351,6 +351,11 @@ async def player_entrance_route(request: EntranceRequest):
     hands_key = f"{current_game_id}_HANDS"
     if redis_client.hexists(hands_key, player_name):
         raise HTTPException(status_code=400, detail="Player already in the game.")
+    
+    player_tokens_key = f"{player_name}_TOKENS"
+    player_tokens = redis_client.get(player_tokens_key)
+    if player_tokens is None or float(player_tokens) < payment:
+        raise HTTPException(status_code=400, detail="Insufficient tokens for entry.")
     
     if payment == 20:
         card_num = 2

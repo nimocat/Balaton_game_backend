@@ -76,6 +76,34 @@ def load_player_items(player_name: str) -> dict:
 
     return load_player_to_redis(player_name)
 
+def load_player_tokens(player_name: str) -> float:
+    """
+    Load the player's tokens from Redis. If not found, fetch from MongoDB and update Redis.
+    
+    Args:
+    player_name (str): The name of the player whose tokens need to be fetched.
+    
+    Returns:
+    int: The number of tokens the player has.
+    """
+    player_tokens_key = f"{player_name}_TOKENS"
+    tokens = redis_client.get(player_tokens_key)
+    
+    if tokens is None:
+        # Fetch from MongoDB if not found in Redis
+        player_data = db.players.find_one({"name": player_name}, {"tokens": 1})
+        if player_data and "tokens" in player_data:
+            tokens = player_data["tokens"]
+            # Update Redis with the fetched data
+            redis_client.set(player_tokens_key, tokens)
+            logger.info(f"Loaded {player_name}'s tokens from MongoDB and updated Redis: {tokens}")
+        else:
+            tokens = 0  # Default to 0 if not found in MongoDB either
+            logger.info(f"No tokens found for {player_name} in MongoDB. Defaulting to 0.")
+    
+    return float(tokens)
+
+
 def update_player_items_to_mongo(player_name: str):
     player_key = f"{player_name}_ITEMS"
 
