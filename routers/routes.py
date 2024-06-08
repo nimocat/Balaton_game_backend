@@ -337,7 +337,6 @@ async def get_consecutive_checkins(player_name: str):
     
     return player_data.get('consecutive_checkins', 0)
 
-
 @router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'])
 async def player_entrance_route(request: EntranceRequest):
     player_name = request.player_name
