@@ -2555,3 +2555,7 @@
 2024-06-08 15:08:49,509 - __main__ - INFO - Dealer's hand ['DJ', 'DA', 'D5', 'RJ', 'S7'] string
 2024-06-08 15:08:49,510 - __main__ - INFO - Dealer's hand ['DJ', 'DA', 'D5', 'RJ', 'S7'] added to game 20240608070649423125
 2024-06-08 15:08:49,511 - __main__ - INFO - Game ID: 20240608070849510880 Generated, New Game Start
+2024-06-08 15:10:49,600 - __main__ - INFO - Game ID: b'20240608070849510880' executing
+2024-06-08 15:10:49,600 - __main__ - INFO - Dealer's hand ['CA', 'BJ', 'H6', 'HA', 'C8'] string
+2024-06-08 15:10:49,601 - __main__ - INFO - Dealer's hand ['CA', 'BJ', 'H6', 'HA', 'C8'] added to game 20240608070849510880
+2024-06-08 15:10:49,602 - __main__ - INFO - Game ID: 20240608071049601954 Generated, New Game Start
