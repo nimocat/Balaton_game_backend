@@ -683,5 +683,5 @@ async def replace_player_card_with_random(player_name: str, request: ReplaceCard
     # Save the updated hand back to Redis
     redis_client.hset(hands_key, player_name, json.dumps(player_hand))
 
-    return {"message": "Card replaced successfully with a random new card", "new_hand": player_hand}
+    return {"message": "Card replaced successfully with a random new card", "cards": player_hand}
 
