@@ -2,6 +2,7 @@ import threading
 import time
 import random
 import json
+from typing import List, Optional
 import redis
 import math
 import threading
@@ -460,6 +461,25 @@ def update_player_tokens_to_mongo(player_name: str):
             new_player = {"name": player_name, "tokens": player_tokens}
             player_collection.insert_one(new_player)
 
+def update_player(player_name: str):
+    player_tokens_key = f"{player_name}_TOKENS"
+    player_items_key = f"{player_name}_ITEMS"
+    player_tokens = redis_client.get(player_tokens_key)
+    player_items = redis_client.hgetall(player_items_key)
+
+    update_data = {}
+    if player_tokens:
+        player_tokens = float(player_tokens.decode('utf-8'))
+        update_data["tokens"] = player_tokens
+
+    if player_items:
+        player_items = {key.decode('utf-8'): int(value.decode('utf-8')) for key, value in player_items.items()}
+        update_data["items"] = player_items
+
+    if update_data:
+        db.players.update_one({"name": player_name}, {"$set": update_data}, upsert=True)
+        logger.info(f"Updated {player_name}'s tokens and items in MongoDB")
+
 def check_task_completion(player_task_record, refresh_hours):
     last_completed = player_task_record.get("last_completed")
     if last_completed:
@@ -473,39 +493,72 @@ def check_task_completion(player_task_record, refresh_hours):
             return False, formatted_remaining_time
     return True, None
 
-def get_checkin_data(check_in_type):
-    # Retrieve all checkin tasks of type '1' from Redis and format them into JSON
-    checkin_type_one_keys = redis_client.keys(f"checkin:{check_in_type}")
-    checkin_type_one_tasks = []
+def fetch_type_tasks(task_type: int):
+    # Retrieve all task IDs of a specific type from Redis
+    task_ids = redis_client.smembers(f"task_type:{task_type}")
+    tasks = []
     
-    for key in checkin_type_one_keys:
-        task_data = redis_client.hgetall(key)
-        for checkpoint, rewards in task_data.items():
-            try:
-                checkpoint_int = int(checkpoint)
-                rewards_str = rewards.decode('utf-8')
-            except ValueError:
-                continue  # Skip this iteration if conversion to int fails
-            task = {
-                "checkpoint": checkpoint_int,
-                "rewards": rewards_str
-            }
-            checkin_type_one_tasks.append(task)
-    return checkin_type_one_tasks
+    for task_id in task_ids:
+        # Construct the key for each task
+        task_key = f"task:{task_id.decode('utf-8')}"
+        # Retrieve task data from Redis
+        task_data = redis_client.hgetall(task_key)
+        # Convert task data to the appropriate format
+        formatted_task_data = {key.decode('utf-8'): value.decode('utf-8') for key, value in task_data.items()}
+        tasks.append(formatted_task_data)
+    
+    # Sort tasks by 'checkpoint' key, assuming it's an integer
+    tasks.sort(key=lambda x: int(x['checkpoint']))
+    
+    return tasks
 
-def update_can_claim_tasks(player_name):
+def settle_rewards(player_name: str, checkpoint: int, task_type: int) -> bool:
+    """
+    Settle rewards for a player based on the checkpoint and task type, returning success status.
+    
+    Args:
+    player_name (str): The name of the player.
+    checkpoint (int): The checkpoint to match.
+    task_type (int): The type of tasks to filter by.
+    settlement_type (int): The type of settlement; default is 1.
+    
+    Returns:
+    bool: True if rewards were successfully given, False otherwise.
+    """
+    # Retrieve all task IDs of the specified type from Redis
+    task_ids = redis_client.smembers(f"task_type:{task_type}")
+    
+    for task_id in task_ids:
+        # Construct the key for each task
+        task_key = f"task:{task_id.decode('utf-8')}"
+        # Retrieve task data from Redis
+        task_data = redis_client.hgetall(task_key)
+        # Convert task data to the appropriate format
+        formatted_task_data = {key.decode('utf-8'): value.decode('utf-8') for key, value in task_data.items()}
+        
+        # Check if the checkpoint matches
+        if int(formatted_task_data['checkpoint']) == checkpoint:
+            # Decode and evaluate the rewards string to convert it into a dictionary
+            rewards = eval(formatted_task_data['rewards'])
+            # Call send_rewards to reward the player and capture the result
+            success = send_rewards(player_name=player_name, rewards=rewards, task_id=task_id.decode('utf-8'))
+            return success  # Return the result of sending rewards
+
+    return False  # Return False if no matching task was found or rewards were not sent
+
+def update_can_claim_tasks(player_name: str, task_type: str):
     # Fetch player's consecutive checkins from MongoDB
     player_data = db.players.find_one({"name": player_name})
     consecutive_checkins = player_data.get('consecutive_checkins', 0)
 
-    # Fetch type 2 checkin tasks from Redis
-    type_two_tasks = redis_client.hgetall("checkin:2")
+    # Fetch checkin tasks of specified type from Redis
+    checkin_tasks = redis_client.hgetall(f"checkin:{task_type}")
     can_claim = set(redis_client.smembers(f"{player_name}_CANCLAIM"))
     claimed = set(redis_client.smembers(f"{player_name}_CLAIMED"))
 
     # Determine new tasks that can be claimed
     new_can_claim = []
-    for checkpoint, task_id in type_two_tasks.items():
+    for checkpoint, task_id in checkin_tasks.items():
         checkpoint_int = int(checkpoint)
         task_id_str = task_id.decode('utf-8')
 
@@ -533,3 +586,59 @@ async def is_type2(task_id):
     exists = redis_client.hexists("checkin:2", task_id)
     return exists
 
+def send_rewards(player_name: str, rewards: list, task_id: Optional[str] = None) -> bool:
+    """
+    Update player's rewards in Redis atomically.
+    Args:
+    player_name (str): The name of the player.
+    rewards (list): A list of tuples where each tuple contains an item_id and quantity.
+    task_id (Optional[str]): The task identifier, if applicable.
+    settlement_type (int): The type of settlement; 1 for claim settlement, 0 for immediate settlement.
+
+    Returns:
+    bool: True if the transaction was successful, False otherwise.
+    """
+    try:
+        with redis_client.pipeline() as pipe:
+            for item_id, quantity in rewards:
+                if item_id == 1:
+                    pipe.incrbyfloat(f"{player_name}_TOKENS", float(quantity))
+                else:
+                    pipe.hincrby(f"{player_name}_ITEMS", str(item_id), int(quantity))
+            if task_id:
+                settlement_type = int(redis_client.hget(f"task:{task_id}", "settlement_type").decode('utf-8'))
+                if settlement_type == 1:
+                    pipe.srem(f"{player_name}_CANCLAIM", task_id)
+                    pipe.sadd(f"{player_name}_CLAIMED", task_id)
+                elif settlement_type == 2:
+                    pipe.srem(f"{player_name}_CANCLAIM", task_id)
+            pipe.execute()
+        return True
+    except Exception as e:
+        print(f"Failed to update rewards: {e}")
+        return False
+
+def fetch_claim_tasks(player_name: str, task_type: Optional[int] = None, claim_type: str = "CANCLAIM") -> List[int]:
+    """
+    Fetches task IDs from CANCLAIM set for a given player that match a specific task type, or all task IDs if no type is specified.
+    
+    Args:
+    player_name (str): The name of the player.
+    task_type (Optional[int]): The type of tasks to filter by, or None to fetch all tasks.
+    
+    Returns:
+    List[int]: A list of task IDs that the player can claim, filtered by type if specified.
+    """
+    # Fetch all task IDs from CANCLAIM
+    tasks = redis_client.smembers(f"{player_name}_{claim_type}")
+    
+    if task_type is not None:
+        # Fetch task IDs of the specified type
+        type_tasks = redis_client.smembers(f"task_type:{task_type}")
+        # Filter tasks by the specified type
+        result = [int(task_id.decode('utf-8')) for task_id in tasks if task_id in type_tasks]
+    else:
+        # Return all tasks if no type is specified
+        result = [int(task_id.decode('utf-8')) for task_id in tasks]
+    
+    return result

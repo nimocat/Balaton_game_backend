@@ -75,11 +75,14 @@ def load_quest_items():
 
     logger.info("Quest items loaded into Redis successfully.")
 
-def load_checkin():
+
+# load checkin表，目前也是task表，存储后，一个是id -> info map，一个是type -> [task_id] set。通过id查询信息，通过type查询id
+def load_quest():
     # Load the data from Excel file
-    checkin_df = pd.read_excel('design_docs/checkin.xlsx')
+    checkin_df = pd.read_excel('design_docs/quest.xlsx')
     
     # Use a Redis pipeline to batch the operations and reduce the number of round trips to the server
+    # 以type为分类
     with redis_client.pipeline() as pipe:
         for _, row in checkin_df.iterrows():
             # Extract data from the row
@@ -87,25 +90,35 @@ def load_checkin():
             checkpoint = int(row['checkpoint'])
             type = int(row['type'])
             rewards = str(row['reward'])
-            
+            repeat = str(row['repeat'])
+            settlement_type = str(row['settlement_type'])
+
+            # Construct the Redis key using task_id
+            key = f"task:{task_id}"
+            # Create a dictionary of the remaining data to be stored
+            quest_data = {
+                'checkpoint': checkpoint,
+                'type': type,
+                'rewards': rewards,
+                'repeat': repeat,
+                'settlement_type': settlement_type
+            }
+            # Store the checkin data in Redis
+            pipe.hmset(key, quest_data)
+
             # Construct the Redis key using type
-            key = f"checkin:{type}"
-            # Construct the field-value pair where task_id is the field and checkpoint:rewards is the value
-            field_value = f"{checkpoint}:{rewards}"
-            
-            # Use Redis' HSET to store the checkin data with the key, field (task_id), and value (checkpoint:rewards)
-            pipe.hset(key, task_id, field_value)
+            key = f"task_type:{type}"
+            # Store the task_id under the constructed key
+            pipe.sadd(key, task_id)
         
         # Execute all commands in the batch
         pipe.execute()
 
-    logger.info("Check-in data loaded into Redis successfully.")
-
+    logger.info("Quest data loaded into Redis successfully.")
 
 def load_data_from_files():
     # Load game items first
     load_game_items()
     # Add other data loading functions here in the sequence they need to be loaded
     load_shop_items()
-
-    load_checkin()
+    load_quest()
