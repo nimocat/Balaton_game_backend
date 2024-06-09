@@ -282,7 +282,7 @@ async def get_endgame_info(request: GameInfoRequest):
     return JSONResponse(content=game_info.dict())
 
 # Player routers
-@router.post("/user_login", summary='Invoke once player is login', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
+@router.post("/user_login", summary='Invoke once player is login', tags=['Player'])
 async def user_login(request: LoginRequest):
     player_name = request.player_name
     # Update the player's last login time in MongoDB
@@ -345,7 +345,7 @@ async def get_consecutive_checkins(player_name: str):
     
     return player_data.get('consecutive_checkins', 0)
 
-@router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
+@router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'])
 async def player_entrance_route(request: EntranceRequest):
     player_name = request.player_name
     payment = request.payment
@@ -639,3 +639,49 @@ async def get_farming_task_status(request: LoginRequest):
             return FarmingResponse(status="2", message="Task can be claimed")
         else:
             return FarmingResponse(status="0", message="Task can start")
+        
+@router.post("/player/{player_name}/replace_card", summary='Replace a card in player\'s hand by index with a random new card', tags=['Player'])
+async def replace_player_card_with_random(player_name: str, request: ReplaceCardIndexRequest):
+    """
+    Replace a card in the player's hand at a specified index with a new random card that is not already in the hand.
+    - **player_name**: The name of the player.
+    - **request**: Contains the index of the card to be replaced.
+    """
+    current_game_id = redis_client.get("CURRENT_GAME")
+    if current_game_id is None:
+        raise HTTPException(status_code=404, detail="No current game found.")
+    current_game_id = current_game_id.decode('utf-8')
+
+    hands_key = f"{current_game_id}_HANDS"
+    player_hand = redis_client.hget(hands_key, player_name)
+    if player_hand is None:
+        raise HTTPException(status_code=404, detail="Player not found in the current game.")
+
+    # Decode the player's hand and convert it from string to list
+    player_hand = eval(player_hand.decode('utf-8'))
+
+    # Check if the index is valid
+    if request.index < 0 or request.index >= len(player_hand):
+        raise HTTPException(status_code=400, detail="Index out of range.")
+
+    # Generate a new random card that is not in the current hand
+    new_card = None
+    attempts = 0
+    while attempts < 100:  # Limit attempts to avoid infinite loops
+        potential_new_card = generate_hand(1)[0]
+        if potential_new_card not in player_hand:
+            new_card = potential_new_card
+            break
+        attempts += 1
+
+    if not new_card:
+        raise HTTPException(status_code=500, detail="Failed to generate a unique new card.")
+
+    # Replace the card at the given index with the new random card
+    player_hand[request.index] = new_card
+
+    # Save the updated hand back to Redis
+    redis_client.hset(hands_key, player_name, json.dumps(player_hand))
+
+    return {"message": "Card replaced successfully with a random new card", "new_hand": player_hand}
+

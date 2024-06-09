@@ -174,3 +174,6 @@ class FarmingResponse(BaseModel):
                 "message": "Farming task initiated successfully."
             }
         }
+
+class ReplaceCardIndexRequest(BaseModel):
+    index: int = Field(..., description="The index of the card to be replaced in the player's hand")
