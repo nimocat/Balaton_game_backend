@@ -7,6 +7,47 @@ from database import db
 from database import redis_client
 from datetime import datetime
 from hooks import player_hook
+from fastapi import Request, Depends
+import hmac
+import hashlib
+
+ACCESS_TOKEN = "6970070520:AAE_0lMuJNo9Uyh9O1xZQ0LeVMBFjl3bXPE"
+
+async def verify_balaton_access_token(request: Request):
+    token = request.headers.get("Balaton-Access-Token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Balaton-Access-Token is missing")
+
+    data = prepare_data_to_check(token)
+    username = data.get('username')
+    hash_value = data.get('hash')
+
+    if not username or not hash_value:
+        raise HTTPException(status_code=400, detail="Username or hash is missing")
+
+    redis_key = f"{username}_HASH"
+    stored_hash = redis_client.get(redis_key)
+
+    if stored_hash and stored_hash.decode('utf-8') == hash_value:
+        return True
+    else:
+        if check_hash(data, ACCESS_TOKEN):
+            redis_client.setex(redis_key, 2 * 60 * 60, hash_value)  # Set expiry to 2 hours
+            return True
+        else:
+            raise HTTPException(status_code=401, detail="Invalid hash")
+
+def prepare_data_to_check(init_data: str) -> dict:
+    return dict(item.split('=') for item in init_data.split('&'))
+
+def check_hash(init_data: str, tg_token: str) -> bool:
+    data_to_check = prepare_data_to_check(init_data)
+    received_hash = data_to_check.get('hash')
+    secret_key = hmac.new(tg_token.encode(), "WebAppData".encode(), digestmod=hashlib.sha256).digest()
+    data_check_string = '\n'.join(f"{key}={value}" for key, value in sorted(data_to_check.items())).encode()
+    hash_check = hmac.new(secret_key, data_check_string, digestmod=hashlib.sha256).hexdigest()
+    return hash_check == received_hash
+
 router = APIRouter()
 
 @router.get("/game_id", response_model=str, summary='Get the current game id', tags=['Info'])
@@ -34,7 +75,7 @@ async def get_game_pool():
         return 0
     return int(pool_amount)
 
-@router.get("/player/{player_name}/hand", response_model=str)
+@router.get("/player/{player_name}/hand", response_model=str, dependencies=[Depends(verify_balaton_access_token)])
 async def get_player_hand(player_name: str):
 
     # 获取当前游戏的ID
@@ -51,7 +92,7 @@ async def get_player_hand(player_name: str):
     return player_hand.decode('utf-8')
     
 
-@router.get("/check_player_in_game/{player_name}", summary='Check if the player is in current game', tags=['Player'])
+@router.get("/check_player_in_game/{player_name}", summary='Check if the player is in current game', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def check_player_in_game(player_name: str):
     current_game_id = redis_client.get("CURRENT_GAME")
 
@@ -166,7 +207,7 @@ async def get_game_info():
     
     return JSONResponse(content=game_info.dict())
 
-@router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'])
+@router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'], dependencies=[Depends(verify_balaton_access_token)])
 async def get_endgame_info(request: GameInfoRequest):
     game_id = request.game_id if request.game_id else redis_client.get("LAST_GAME").decode('utf-8')
     player_name = request.player_name
@@ -241,15 +282,16 @@ async def get_endgame_info(request: GameInfoRequest):
     return JSONResponse(content=game_info.dict())
 
 # Player routers
-@router.post("/user_login", summary='Invoke once player is login', tags=['Player'])
+@router.post("/user_login", summary='Invoke once player is login', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def user_login(request: LoginRequest):
     player_name = request.player_name
     # Update the player's last login time in MongoDB
     player_hook.login_hook(player_name)
+    
     return JSONResponse(content=load_player_tokens(player_name))
 
 # Player routers
-@router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'])
+@router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def daily_checkin(request: LoginRequest):
     player_name = request.player_name
     player_data = db.players.find_one({"name": player_name})
@@ -324,7 +366,7 @@ async def get_checkin_tasks():
     return {"checkin_tasks": checkin_tasks}
 
 
-@router.get("/player/{player_name}/consecutive_checkins", summary='Return a int to identify the consecutive_checkins', response_model=int, tags=["Player"])
+@router.get("/player/{player_name}/consecutive_checkins", summary='Return a int to identify the consecutive_checkins', response_model=int, tags=["Player"], dependencies=[Depends(verify_balaton_access_token)])
 async def get_consecutive_checkins(player_name: str):
     """
     Retrieve the number of consecutive check-in days for a given player.
@@ -337,7 +379,7 @@ async def get_consecutive_checkins(player_name: str):
     
     return player_data.get('consecutive_checkins', 0)
 
-@router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'])
+@router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def player_entrance_route(request: EntranceRequest):
     player_name = request.player_name
     payment = request.payment
@@ -366,7 +408,7 @@ async def player_entrance_route(request: EntranceRequest):
     cards = player_entrance(player_name, card_num)
     return {"message": f"Player {player_name} entered the game with {card_num} cards.", "cards": cards} # 返回手牌
 
-@router.get("/player/{player_name}/tokens", response_model=int, summary='Get the player tokens', tags=['Player'])
+@router.get("/player/{player_name}/tokens", response_model=float, summary='Get the player tokens', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def get_player_tokens(player_name: str):
     """
     Retrieve the number of tokens for a given player from Redis.
@@ -379,7 +421,7 @@ async def get_player_tokens(player_name: str):
     
     return float(tokens)
 
-@router.get("/players/{player_name}/items",response_model=PlayerItemsResponse, summary='Get the player items', tags=['Player'])
+@router.get("/players/{player_name}/items",response_model=PlayerItemsResponse, summary='Get the player items', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def get_player_items(player_name: str):
     # 获取玩家 items
     player_items_key = f"{player_name}_ITEMS"
@@ -393,7 +435,7 @@ async def get_player_items(player_name: str):
 
     return {"player_name": player_name, "items": player_items}
 
-@router.get("/players/{player_name}/history", response_model=PlayerHistoryResponse, summary="Get player history", description="Retrieve the game history for a given player.", tags=['Player'])
+@router.get("/players/{player_name}/history", response_model=PlayerHistoryResponse, summary="Get player history", description="Retrieve the game history for a given player.", tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def get_player_history(player_name: str):
     """
     Retrieve the game history for a given player.
@@ -435,18 +477,20 @@ async def get_player_history(player_name: str):
     return {"player_name": player_name, "history": formatted_history}
 
  # Tasks
-@router.post("/tasks/invite", summary='Invoke when invite link has been clicked', tags=['Task'])
+ # 客户端判断，如果initData里面有start_param，代表是邀请进入的，走邀请login，否则走user_login
+@router.post("/invite_login", summary='Invoke when invite link has been clicked', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def invite_new_user(request: InviteRequest):
-    inviter = request.inviter
-    invitee = request.invitee
-    
+    inviter = request.inviter # start_param带的
+    invitee = request.invitee # username带的
+    player_hook.login_hook(invitee)
+
     INVITEE_REWARD = 100
     INVITER_REWARD = 80
+
     invitee_collection = db.players
     existing_invitee = invitee_collection.find_one({"name": invitee})
-    existing_invitee_in_redis = redis_client.hgetall(f"{invitee}_ITEMS")
 
-    if existing_invitee or existing_invitee_in_redis:
+    if existing_invitee:
         return {"message": "Invitee already exists in the database", "status_code": 404}
 
     inviter_data = invitee_collection.find_one({"name": inviter})

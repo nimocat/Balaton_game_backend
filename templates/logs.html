@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        .log-container { background-color: #f4f4f4; border: 1px solid #ddd; padding: 10px; }
+        .log-entry { 
+            font-family: ui-serif; 
+            margin-bottom: 1px; /* 保持间距为0 */
+            padding: 2px; /* 轻微的内边距 */
+        }
+        .highlight { 
+            color: red; /* 设置文本颜色为红色 */
+        }
+    </style>
+</head>
+<body>
+    <h1>Recent Log Entries</h1>
+    <div class="log-container">
+        {% for line in logs %}
+            <div class="log-entry" id="log-entry-{{ loop.index }}">
+                {{ line }}
+            </div>
+        {% endfor %}
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var entries = document.querySelectorAll('.log-entry');
+            entries.forEach(function(entry) {
+                if (entry.textContent.includes('game_logic')) {
+                    entry.classList.add('highlight');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

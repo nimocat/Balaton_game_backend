@@ -65,7 +65,6 @@ def game_execution():
     # 荷官随机五张牌，作为荷官手牌
     dealer_hand = generate_hand(5)
     dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
-    logger.info(f"Dealer's hand {dealer_hand_str} string")
 
     current_game_id = current_game_id.decode('utf-8')
     dealer_key = f"{current_game_id}_DEALER"
@@ -178,9 +177,18 @@ def countdown_expiry_listener():
     for message in pubsub.listen():
         if message['type'] == 'pmessage':
             data = message['data'].decode('utf-8')
+            if data.endswith("_FARM"):
+                player_name = data[:-5]  # Remove '_FARM' suffix to get the player name
+                threading.Thread(target=add_task_to_can_claim, args=(player_name,)).start()
             if data == "CURRENT_GAME":
                 game_execution()
                 start_new_game()
+
+def add_task_to_can_claim(player_name):
+    task_id = "1001"
+    can_claim_key = f"{player_name}_CANCLAIM"
+    redis_client.sadd(can_claim_key, task_id)
+    logger.info(f"Task {task_id} added to {player_name}'s CANCLAIM list")
 
 if __name__ == "__main__":
 

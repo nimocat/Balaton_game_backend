@@ -1,20 +1,23 @@
 import pandas as pd
-import redis
 from fastapi import APIRouter, HTTPException, Depends, FastAPI
-from pydantic import BaseModel
-from pymongo import MongoClient
+from logging.handlers import RotatingFileHandler
 from database import redis_client
 import logging
-import sys
 from database import db
-
+from models import LoginRequest
 admin = APIRouter()
 admin_secret = "admin_secret"
 tasks_collection = db.tasks
 
 # 配置日志记录
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = RotatingFileHandler("balaton.log", maxBytes= 500 * 1024, backupCount= 3)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+logger.addHandler(handler)
 
 # 函数：管理员接口，通过口令重新加载任务数据到 Redis 中
 def admin_auth(token: str):
@@ -23,20 +26,22 @@ def admin_auth(token: str):
         raise HTTPException(status_code=403, detail="Unauthorized")
 
 @admin.post("/faucet", summary="Admin endpoint to add tokens to a player's account", tags=["admin"])
-async def faucet(player_name: str):
+async def faucet(request: LoginRequest):
+    player_name = request.player_name
     # 检查玩家是否存在于 Redis 中
     player_tokens = f"{player_name}_TOKENS"
 
-    # 增加 1000 个 tokens
+    # 增加 100.5 个 tokens
     redis_client.incrbyfloat(player_tokens, 100.5)
     new_balance = float(redis_client.get(player_tokens).decode('utf-8'))
     
-    logger.info(f"Player {player_name} received 1000 tokens. New balance: {new_balance}")
+    logger.info(f"Player {player_name} received 100.5 tokens. New balance: {new_balance}")
 
     return {"player_name": player_name, "new_balance": new_balance}
 
 @admin.post("/item_faucet", summary="Admin endpoint to add items to a player's account", tags=["admin"])
-async def faucet(player_name: str, item_id: str):
+async def faucet(request: LoginRequest, item_id: str):
+    player_name = request.player_name
     # 获得玩家items key
     player_items_key = f"{player_name}_ITEMS"
 

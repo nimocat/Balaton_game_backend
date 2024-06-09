@@ -22,6 +22,7 @@ def load_game_items():
             }
             # Store the item data in Redis
             pipe.hmset(key, item_data)
+            
         # Execute all commands in the batch
         pipe.execute()
 
