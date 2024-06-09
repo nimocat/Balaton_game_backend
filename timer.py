@@ -177,15 +177,14 @@ def countdown_expiry_listener():
     for message in pubsub.listen():
         if message['type'] == 'pmessage':
             data = message['data'].decode('utf-8')
-            if data.endswith("_FARM"):
+            if data.endswith("_FARMING"):
                 player_name = data[:-5]  # Remove '_FARM' suffix to get the player name
-                threading.Thread(target=add_task_to_can_claim, args=(player_name,)).start()
+                threading.Thread(target=add_task_to_can_claim, args=(player_name, 301)).start()
             if data == "CURRENT_GAME":
                 game_execution()
                 start_new_game()
 
-def add_task_to_can_claim(player_name):
-    task_id = "1001"
+def add_task_to_can_claim(player_name: str, task_id: int):
     can_claim_key = f"{player_name}_CANCLAIM"
     redis_client.sadd(can_claim_key, task_id)
     logger.info(f"Task {task_id} added to {player_name}'s CANCLAIM list")

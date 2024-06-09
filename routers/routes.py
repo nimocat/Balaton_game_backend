@@ -566,3 +566,76 @@ async def get_type2_tasks(player_name: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/tasks/farming", response_model=FarmingResponse, summary="Handle farming tasks for a player", tags=['Task'])
+async def handle_farming_task(request: LoginRequest):
+    """
+    Creates or updates a farming task for a player, setting rewards with an expiration.
+    """
+    player_name = request.player_name
+    farming_key = f"{player_name}_FARMING"
+    task_id = "2001"
+    
+    # Check if the key already exists
+    existing_rewards = redis_client.get(farming_key)
+    if existing_rewards:
+        # Calculate the rewards gained so far and the rate of increase per second
+        elapsed_time = redis_client.ttl(farming_key)
+        total_time = 4 * 3600  # 4 hours in seconds
+        remaining_time = total_time - elapsed_time
+        rewards_per_second = eval(existing_rewards.decode('utf-8')) / total_time
+        accumulated_rewards = rewards_per_second * elapsed_time
+        
+        return FarmingResponse(
+            status="1",
+            accumulated_rewards=accumulated_rewards,
+            rewards_per_second=rewards_per_second,
+            remaining_time=remaining_time
+        )
+    else:
+        # Retrieve the rewards for task_id 2001
+        task_rewards = redis_client.hget(f"task:{task_id}", "rewards")
+        if not task_rewards:
+            raise HTTPException(status_code=404, detail="Task rewards not found for given task ID")
+        
+        # Set the rewards in Redis with an expiration of 4 hours
+        redis_client.setex(farming_key, 14400, task_rewards)  # 14400 seconds = 4 hours
+        
+        return FarmingResponse(
+            status="1",
+            message="Farming task initiated successfully."
+        )
+    
+@router.get("/tasks/farming/status", response_model=FarmingResponse, summary="Get the status of a farming task for a player", tags=['Task'])
+async def get_farming_task_status(request: LoginRequest):
+    """
+    Retrieves the status of a farming task for a player. If the task has started, returns all information.
+    If not started, returns status as 0.
+    If already started, returns status as 1.
+    If can claim, returns status as 2.
+    """
+    player_name = request.player_name
+    farming_key = f"{player_name}_FARMING"
+    
+    # Check if the key exists to determine if the task has started
+    existing_rewards = redis_client.get(farming_key)
+    if existing_rewards:
+        # Calculate the rewards gained so far and the rate of increase per second
+        elapsed_time = redis_client.ttl(farming_key)
+        total_time = 4 * 3600  # 4 hours in seconds
+        remaining_time = total_time - elapsed_time
+        rewards_per_second = eval(existing_rewards.decode('utf-8')) / total_time
+        accumulated_rewards = rewards_per_second * elapsed_time
+        
+        return FarmingResponse(
+            status="1",
+            accumulated_rewards=accumulated_rewards,
+            rewards_per_second=rewards_per_second,
+            remaining_time=remaining_time
+        )
+    else:
+        can_claim_key = f"{player_name}_CANCLAIM"
+        if redis_client.sismember(can_claim_key, 301):
+            return FarmingResponse(status="2", message="Task can be claimed")
+        else:
+            return FarmingResponse(status="0", message="Task can start")

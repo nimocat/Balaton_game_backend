@@ -156,3 +156,21 @@ class Type2TaskResponse(BaseModel):
                 "claimed": [201, 202]
             }
         }
+
+class FarmingResponse(BaseModel):
+    status: str = Field(..., description="Indicates if the task is new or existing.")
+    message: str = Field(None, description="A message about the task initiation.")
+    accumulated_rewards: float = Field(None, description="The total rewards accumulated so far.")
+    rewards_per_second: float = Field(None, description="Rate of reward accumulation per second.")
+    remaining_time: int = Field(None, description="Time remaining for the task in seconds.")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "status": "existing",
+                "accumulated_rewards": 120.5,
+                "rewards_per_second": 0.03347222,
+                "remaining_time": 10800,
+                "message": "Farming task initiated successfully."
+            }
+        }
