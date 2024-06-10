@@ -116,9 +116,53 @@ def load_quest():
 
     logger.info("Quest data loaded into Redis successfully.")
 
+
+def load_settlement():
+    # Load the data from Excel file
+    settlement_df = pd.read_excel('design_docs/Settlement.xlsx')
+    
+    # Use a Redis pipeline to batch the operations and reduce the number of round trips to the server
+    with redis_client.pipeline() as pipe:
+        for _, row in settlement_df.iterrows():
+            # Extract data from the row
+            settlement_id = int(row['id'])
+            type = int(row['type'])
+            name = str(row['name'])
+            buttom = str(row['buttom'])
+            mul = float(row['mul'])
+            special = str(row['special'])
+            random = str(row['random'])
+
+            # Construct the Redis key using settlement_id
+            key = f"settlement:{settlement_id}"
+            # Create a dictionary of the remaining data to be stored
+            settlement_data = {
+                'type': type,
+                'name': name,
+                'buttom': buttom,
+                'mul': mul,
+                'special': special,
+                'random': random
+            }
+            # Store the settlement data in Redis
+            pipe.hmset(key, settlement_data)
+
+            # Construct the Redis key using type
+            key = f"settlement_type:{type}"
+            # Store the settlement_id under the constructed key
+            pipe.sadd(key, settlement_id)
+        
+        # Execute all commands in the batch
+        pipe.execute()
+
+    logger.info("Settlement data loaded into Redis successfully.")
+
+
+
 def load_data_from_files():
     # Load game items first
     load_game_items()
     # Add other data loading functions here in the sequence they need to be loaded
     load_shop_items()
     load_quest()
+    load_settlement()
