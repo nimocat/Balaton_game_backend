@@ -161,8 +161,13 @@ def load_settlement():
 
 def load_data_from_files():
     # Load game items first
+    # 首先加载游戏物品
     load_game_items()
     # Add other data loading functions here in the sequence they need to be loaded
+    # 按照需要加载的顺序在此处添加其他数据加载函数
     load_shop_items()
+    # 加载商店物品
     load_quest()
+    # 加载任务
     load_settlement()
+    # 加载结算表
