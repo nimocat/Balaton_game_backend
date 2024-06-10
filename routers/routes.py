@@ -448,7 +448,6 @@ async def get_player_history(player_name: str):
 async def invite_new_user(request: InviteRequest):
     inviter = request.inviter # start_param带的
     invitee = request.invitee # username带的
-    player_hook.login_hook(invitee)
 
     INVITEE_REWARD = 100
     INVITER_REWARD = 80
@@ -458,6 +457,8 @@ async def invite_new_user(request: InviteRequest):
 
     if existing_invitee:
         return {"message": "Invitee already exists in the database", "status_code": 404}
+
+    player_hook.login_hook(invitee)
 
     inviter_data = invitee_collection.find_one({"name": inviter})
     if inviter_data:
