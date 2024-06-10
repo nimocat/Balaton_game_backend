@@ -188,3 +188,43 @@ def calculate_reward_simplified(current_game_id):
     ]
 
     return rewards_summary
+
+def check_for_specific_card(hand, card_to_check):
+    """
+    Check if a hand contains a specific card.
+    
+    Args:
+    hand (str): The hand of the player as a string of cards.
+    card_to_check (str): The card to check for in the hand.
+    
+    Returns:
+    bool: True if the hand contains the specified card, False otherwise.
+    """
+    # Split the hand string into individual cards
+    cards = hand.split()
+    
+    # Check each card in the hand to see if it matches the card to check
+    for card in cards:
+        if card == card_to_check:
+            return True
+    return False
+
+def check_for_suit(hand, suit):
+    """
+    Check if a hand contains any card of a specific suit.
+    
+    Args:
+    hand (str): The hand of the player as a string of cards.
+    suit (str): The suit to check for in the hand.
+    
+    Returns:
+    bool: True if the hand contains at least one card of the specified suit, False otherwise.
+    """
+    # Split the hand string into individual cards
+    cards = hand.split()
+    
+    # Check if any card in the hand matches the specified suit
+    for card in cards:
+        if card[0] == suit:
+            return True
+    return False

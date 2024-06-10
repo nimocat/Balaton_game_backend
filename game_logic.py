@@ -650,3 +650,65 @@ def fetch_claim_tasks(player_name: str, task_type: Optional[int] = None, claim_t
         result = [int(task_id.decode('utf-8')) for task_id in tasks]
     
     return result
+
+def fetch_random_quests(settle_num: int) -> List[int]:
+    """
+    Fetches n random quest IDs of type 1 for a given player.
+    
+    Args:
+    player_name (str): The name of the player.
+    n (int): The number of random quest IDs to fetch.
+    
+    Returns:
+    List[int]: A list containing n random quest IDs of type 1.
+    """
+    # Fetch all quest IDs of type 1
+    type_1_settles = redis_client.smembers(f"settlement_type:1")
+    type_1_settles = [int(quest_id.decode('utf-8')) for quest_id in type_1_settles]
+    
+    # Randomly select n quest IDs
+    random_settles = random.sample(type_1_settles, min(settle_num, len(type_1_settles)))
+    
+    return random_settles
+
+def settlement_process(settlement_num: int) -> List[List[int]]:
+    """
+    Settlement process that fetches n random quest IDs of type 1 and places them in the first position of the settlement array.
+    
+    Args:
+    player_name (str): The name of the player.
+    n (int): The number of random quest IDs to fetch.
+    
+    Returns:
+    List[List[int]]: The settlement array with the random quest IDs at the first position.
+    """
+    settlement_array = []
+    
+    # Fetch n random quest IDs of type 1
+    random_settle = fetch_random_quests(settlement_num)
+    
+    # Place the random quest IDs in the first position of the settlement array
+    settlement_array.append(random_settle)
+    
+    return settlement_array
+
+def global_settlement_execute(settlement_array: List[List[int]]) -> List[Dict]:
+    """
+    Executes global settlement by fetching information for each settlement ID in the first element of the settlement array.
+
+    Args:
+    settlement_array (List[List[int]]): The settlement array containing settlement IDs in the first element.
+
+    Returns:
+    List[Dict]: A list of dictionaries containing information about each settlement.
+    """
+    settlement_ids = settlement_array[0]
+    settlement_info_list = []
+
+    # Fetch information for each settlement ID
+    for settlement_id in settlement_ids:
+        settlement_info = redis_client.hgetall(f"settlement_info:{settlement_id}")
+        settlement_info_decoded = {key.decode('utf-8'): value.decode('utf-8') for key, value in settlement_info.items()}
+        settlement_info_list.append(settlement_info_decoded)
+
+    return settlement_info_list

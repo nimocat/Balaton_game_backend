@@ -1,5 +1,5 @@
 import unittest
-from alg import calculate_score, calculate_score_without_joker
+from alg import calculate_score
 import sys
 import os
 
