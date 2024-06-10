@@ -586,26 +586,34 @@ async def is_type2(task_id):
     exists = redis_client.hexists("checkin:2", task_id)
     return exists
 
-def send_rewards(player_name: str, rewards: list, task_id: Optional[str] = None) -> bool:
+def send_rewards(player_name: str, rewards: Optional[list] = None, task_id: Optional[str] = None) -> bool:
     """
     Update player's rewards in Redis atomically.
     Args:
     player_name (str): The name of the player.
-    rewards (list): A list of tuples where each tuple contains an item_id and quantity.
+    rewards (Optional[list]): An optional list of tuples where each tuple contains an item_id and quantity.
     task_id (Optional[str]): The task identifier, if applicable.
-    settlement_type (int): The type of settlement; 1 for claim settlement, 0 for immediate settlement.
 
     Returns:
     bool: True if the transaction was successful, False otherwise.
     """
     try:
         with redis_client.pipeline() as pipe:
-            for item_id, quantity in rewards:
-                if item_id == 1:
-                    pipe.incrbyfloat(f"{player_name}_TOKENS", float(quantity))
-                else:
-                    pipe.hincrby(f"{player_name}_ITEMS", str(item_id), int(quantity))
+            # 非任务奖励：直发
+            if rewards:
+                for item_id, quantity in rewards:
+                    if item_id == 1:
+                        # 每日排行榜
+                        pipe.zincrby("REWARD_RANKING_DAY", quantity, player_name)
+                        pipe.incrbyfloat(f"{player_name}_TOKENS", float(quantity))
+                    else:
+                        pipe.hincrby(f"{player_name}_ITEMS", str(item_id), int(quantity))
+            # 任务奖励，从表中获取奖励，根据结算类型，判断是否直发
             if task_id:
+                rewards = redis_client.hget(f"task:{task_id}", "rewards")
+                if rewards:
+                    rewards_list = eval(rewards.decode('utf-8'))
+                    send_rewards(player_name, rewards_list)
                 settlement_type = int(redis_client.hget(f"task:{task_id}", "settlement_type").decode('utf-8'))
                 if settlement_type == 1:
                     pipe.srem(f"{player_name}_CANCLAIM", task_id)

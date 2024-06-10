@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 from database import db, redis_client
 from alg import generate_hand, calculate_score, combine_hands, dealer_draw, calculate_reward
-from game_logic import save_current_game_to_mongo
+from game_logic import save_current_game_to_mongo, update_player_tokens_to_mongo, send_rewards
 
 # 配置日志记录
 logger = logging.getLogger(__name__)
@@ -110,6 +110,7 @@ def game_execution():
     top_10_percent_index = max(1, math.floor(num_players * 0.1))
     top_25_percent_index = max(1, math.floor(num_players * 0.25))
     prize_pool = int(redis_client.get(f"{current_game_id}_POOL") or 0)
+    # 计算出奖励
     top_10_percent_reward = float(prize_pool * 0.5 / top_10_percent_index) if top_10_percent_index > 0 else 0
     top_10_to_25_percent_reward = float(prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index)) if top_25_percent_index > top_10_percent_index else 0
 
@@ -127,16 +128,11 @@ def game_execution():
     with redis_client.pipeline() as pipe:
         while True:
             try:
-                pipe.watch(rewards_key, "REWARD_RANKING_DAY")
-                pipe.multi()
                 for player, reward in rewards.items():
                     pipe.zadd(rewards_key, {player: reward})
-                    # 更新每日排行信息
-                    pipe.zincrby("REWARD_RANKING_DAY", reward, player)
                     # 为所有奖励不为0的玩家的items id为1的值增加奖励
                     if reward > 0:
-                        player_tokens_key = f"{player}_TOKENS"
-                        pipe.incrbyfloat(player_tokens_key, reward)
+                        send_rewards(player_name=player, rewards =[[1, reward]]) # 奖励直发
                 pipe.execute()
                 break
             except redis.WatchError:
@@ -151,15 +147,7 @@ def game_execution():
 
     def update_player_tokens():
         for player_name, _ in player_scores:
-            player_tokens_key = f"{player_name}_TOKENS"
-            tokens = redis_client.get(player_tokens_key)
-            if tokens is not None:
-                db.players.update_one(
-                    {"name": player_name},
-                    {"$set": {"tokens": float(tokens)}},
-                    upsert=True
-                )
-                logger.info(f"Updated MongoDB with {player_name}'s tokens: {tokens}")
+            update_player_tokens_to_mongo(player_name)
 
     threading.Thread(target=update_player_tokens).start()
     
