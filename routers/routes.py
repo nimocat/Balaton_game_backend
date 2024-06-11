@@ -1,6 +1,7 @@
 import json
 from models import *
 from game_logic import *
+from alg import *
 from fastapi import APIRouter, HTTPException, Path
 from fastapi.responses import JSONResponse
 from database import db
@@ -75,7 +76,7 @@ async def get_game_pool():
         return 0
     return int(pool_amount)
 
-@router.get("/player/{player_name}/hand", response_model=str, dependencies=[Depends(verify_balaton_access_token)])
+@router.get("/player/{player_name}/hand", response_model=str)
 async def get_player_hand(player_name: str):
 
     # 获取当前游戏的ID
@@ -92,7 +93,7 @@ async def get_player_hand(player_name: str):
     return player_hand.decode('utf-8')
     
 
-@router.get("/check_player_in_game/{player_name}", summary='Check if the player is in current game', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
+@router.get("/check_player_in_game/{player_name}", summary='Check if the player is in current game', tags=['Player'])
 async def check_player_in_game(player_name: str):
     current_game_id = redis_client.get("CURRENT_GAME")
 
@@ -207,7 +208,7 @@ async def get_game_info():
     
     return JSONResponse(content=game_info.dict())
 
-@router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'], dependencies=[Depends(verify_balaton_access_token)])
+@router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'])
 async def get_endgame_info(request: GameInfoRequest):
     game_id = request.game_id if request.game_id else redis_client.get("LAST_GAME").decode('utf-8')
     player_name = request.player_name
@@ -314,6 +315,12 @@ async def daily_checkin(request: LoginRequest):
     else:
         new_consecutive_checkins = 1
     
+    # Update longest check-in streak in Redis
+    longest_checkin_key = f"{player_name}_LONGEST_CHECKIN"
+    longest_checkin = redis_client.get(longest_checkin_key)
+    if longest_checkin is None or new_consecutive_checkins > int(longest_checkin):
+        redis_client.set(longest_checkin_key, new_consecutive_checkins)
+
     # update可以claim的checkin任务
     update_can_claim_tasks(player_name=player_name, task_type=2)
     # Retrieve check-in rewards based on the type '1' and the number of consecutive check-ins
@@ -332,7 +339,7 @@ async def daily_checkin(request: LoginRequest):
     update_player(player_name=player_name)
     return {"message": "Check-in successful", "consecutive_days": new_consecutive_checkins}
 
-@router.get("/player/{player_name}/consecutive_checkins", summary='Return a int to identify the consecutive_checkins', response_model=int, tags=["Player"], dependencies=[Depends(verify_balaton_access_token)])
+@router.get("/player/{player_name}/consecutive_checkins", summary='Return a int to identify the consecutive_checkins', response_model=int, tags=["Player"])
 async def get_consecutive_checkins(player_name: str):
     """
     Retrieve the number of consecutive check-in days for a given player.
@@ -374,7 +381,7 @@ async def player_entrance_route(request: EntranceRequest):
     cards = player_entrance(player_name, card_num)
     return {"message": f"Player {player_name} entered the game with {card_num} cards.", "cards": cards} # 返回手牌
 
-@router.get("/player/{player_name}/tokens", response_model=float, summary='Get the player tokens', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
+@router.get("/player/{player_name}/tokens", response_model=float, summary='Get the player tokens', tags=['Player'])
 async def get_player_tokens(player_name: str):
     """
     Retrieve the number of tokens for a given player from Redis.
@@ -387,7 +394,7 @@ async def get_player_tokens(player_name: str):
     
     return float(tokens)
 
-@router.get("/players/{player_name}/items",response_model=PlayerItemsResponse, summary='Get the player items', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
+@router.get("/players/{player_name}/items",response_model=PlayerItemsResponse, summary='Get the player items', tags=['Player'])
 async def get_player_items(player_name: str):
     # 获取玩家 items
     player_items_key = f"{player_name}_ITEMS"
@@ -401,7 +408,7 @@ async def get_player_items(player_name: str):
 
     return {"player_name": player_name, "items": player_items}
 
-@router.get("/players/{player_name}/history", response_model=PlayerHistoryResponse, summary="Get player history", description="Retrieve the game history for a given player.", tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
+@router.get("/players/{player_name}/history", response_model=PlayerHistoryResponse, summary="Get player history", description="Retrieve the game history for a given player.", tags=['Player'])
 async def get_player_history(player_name: str):
     """
     Retrieve the game history for a given player.
@@ -443,13 +450,13 @@ async def get_player_history(player_name: str):
     return {"player_name": player_name, "history": formatted_history}
 
  # Tasks
- # 客户端判断，如果initData里面有start_param，代表是邀请进入的，走邀请login，否则走user_login
-@router.post("/invite_login", summary='Invoke when invite link has been clicked', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
-async def invite_new_user(request: InviteRequest):
+ # 客户端判断，如果initData里面有start_param，代表是邀请进入的，走邀请login，否则走user_login, , dependencies=[Depends(verify_balaton_access_token)]
+@router.post("/invite_login", summary='Invoke when invite link has been clicked', tags=['Player'])
+async def invite_new_user(request: LoginRequest):
     init_data = prepare_data_to_check()
     invite_code = init_data.get('start_param')
-    inviter = request.inviter # start_param带的
-    invitee = request.invitee # username带的
+    inviter = get_uid_by_inv_code(invite_code) # start_param带的
+    invitee = request.player_name # username带的
 
     INVITEE_REWARD = 100
     INVITER_REWARD = 80
@@ -548,11 +555,11 @@ async def claim_task(player_name: str, task_id: str = Path(..., description="The
     rewards = eval(task_rewards.decode('utf-8'))
 
     # Use Redis transaction to ensure atomicity
-    send_rewards(player_name=player_name, rewards=rewards, task_id=task_id)
+    send_rewards(player_name=player_name, task_id=task_id)
 
     # Update MongoDB with the new items (synchronize Redis to MongoDB)
     update_player(player_name=player_name)
-    return {"message": "Task claimed successfully", "rewards": rewards}
+    return {"status_code":"200", "message": "Task claimed successfully", "rewards": rewards}
 
 @router.get("/tasks/{player_name}/checkin_claim_list", response_model=Type2TaskResponse, summary="Get all type 2 tasks in CANCLAIM and CLAIMED", tags=['Task'])
 async def get_type2_tasks(player_name: str):
@@ -562,10 +569,17 @@ async def get_type2_tasks(player_name: str):
     try:
         type2_can_claim = fetch_claim_tasks(player_name, task_type=2)
         type2_claimed = fetch_claim_tasks(player_name, task_type=2, claim_type="CLAIMED")
+        longest_checkin_key = f"{player_name}_LONGEST_CHECKIN"
+        longest_checkin = redis_client.get(longest_checkin_key)
+        if longest_checkin is None:
+            longest_checkin = 0
+        else:
+            longest_checkin = int(longest_checkin)
         
         return {
             "can_claim": type2_can_claim,
-            "claimed": type2_claimed
+            "claimed": type2_claimed,
+            "progress": longest_checkin
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -605,7 +619,7 @@ async def handle_farming_task(request: LoginRequest):
         redis_client.setex(farming_key, 14400, task_rewards)  # 14400 seconds = 4 hours
         
         return FarmingResponse(
-            status="1",
+            status="200",
             message="Farming task initiated successfully."
         )
     

@@ -5,6 +5,7 @@ from database import redis_client
 import json
 import concurrent.futures
 import ctypes
+import string
 
 # 定义扑克牌，包括大小王
 suits = ['H', 'S', 'D', 'C']  # 红桃, 黑桃, 方块, 梅花
