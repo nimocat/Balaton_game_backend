@@ -11,6 +11,12 @@ suits = ['H', 'S', 'D', 'C']  # 红桃, 黑桃, 方块, 梅花
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 jokers = ['BJ', 'RJ']  # 大小王，BJ: Black Joker, RJ: Red Joker
 
+# Constants
+PRIME1 = 7
+PRIME2 = 19
+SALT = 13601919
+ALPHANUMERIC_SET = string.ascii_letters + string.digits  # 62 characters
+
 def generate_hand(poker_num):
     deck = [suit + rank for suit in suits for rank in ranks] + jokers
     random.shuffle(deck)
@@ -114,8 +120,6 @@ def calculate_score_without_joker(rank_counts, hand):
 
 def combine_hands(dealer_hand, player_hand):
     # Convert string representations of hands into lists
-    print(dealer_hand)
-    print(player_hand)
     dealer_hand_list = eval(dealer_hand)
     player_hand_list = eval(player_hand)
     
@@ -228,3 +232,44 @@ def check_for_suit(hand, suit):
         if card[0] == suit:
             return True
     return False
+
+def get_inv_code_by_uid(uid, length):
+    # Amplify and salt the UID
+    uid = uid * PRIME1 + SALT
+
+    code = []
+    sl_idx = [0] * length
+
+    # Diffusion
+    for i in range(length):
+        sl_idx[i] = uid % len(ALPHANUMERIC_SET)
+        sl_idx[i] = (sl_idx[i] + i * sl_idx[0]) % len(ALPHANUMERIC_SET)
+        uid = uid // len(ALPHANUMERIC_SET)
+
+    # Confusion
+    for i in range(length):
+        idx = (i * PRIME2) % length
+        code.append(ALPHANUMERIC_SET[sl_idx[idx]])
+
+    return ''.join(code)
+
+def get_uid_by_inv_code(inv_code):
+    length = len(inv_code)
+    inv_code_indices = [ALPHANUMERIC_SET.index(char) for char in inv_code]
+    
+    # Reverse the confusion
+    sl_idx = [0] * length
+    for i in range(length):
+        idx = (i * PRIME2) % length
+        sl_idx[idx] = inv_code_indices[i]
+    
+    # Reverse the diffusion
+    uid = 0
+    for i in range(length - 1, -1, -1):
+        sl_idx[i] = (sl_idx[i] - i * sl_idx[0]) % len(ALPHANUMERIC_SET)
+        uid = uid * len(ALPHANUMERIC_SET) + sl_idx[i]
+
+    # Remove the salt and amplify
+    uid = (uid - SALT) // PRIME1
+
+    return uid

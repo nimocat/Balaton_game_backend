@@ -1,10 +1,12 @@
-import unittest
-from alg import calculate_score
 import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import unittest
+from alg import calculate_score
+
 
 # 将项目根目录添加到sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 class TestCalculateScore(unittest.TestCase):

@@ -2,7 +2,7 @@ import threading
 import time
 import random
 import json
-from typing import List, Optional
+from typing import Dict, List, Optional
 import redis
 import math
 import threading
@@ -712,3 +712,26 @@ def global_settlement_execute(settlement_array: List[List[int]]) -> List[Dict]:
         settlement_info_list.append(settlement_info_decoded)
 
     return settlement_info_list
+
+def generate_and_store_invite_code(player_name: str) -> str:
+    """
+    Generates a unique 6-character invite code consisting of uppercase English letters and digits for a player and stores it in Redis.
+
+    Args:
+    player_name (str): The name of the player for whom the invite code is being generated.
+
+    Returns:
+    str: The generated invite code, which will be a combination of 6 uppercase English letters and digits (e.g., 'A1B2C3').
+    """
+    import random
+    import string
+
+    # Generate a unique invite code using uppercase letters and digits
+    invite_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+    # Store the invite code in Redis with a key specific to the player
+    redis_client.set(f"{player_name}_INVITE_CODE", invite_code)
+
+    return invite_code
+
+

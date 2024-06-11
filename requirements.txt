@@ -1,0 +1,8 @@
+fastapi
+pandas
+pydantic
+pymongo
+pytest
+redis
+Requests
+uvicorn

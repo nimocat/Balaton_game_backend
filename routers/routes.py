@@ -446,6 +446,8 @@ async def get_player_history(player_name: str):
  # 客户端判断，如果initData里面有start_param，代表是邀请进入的，走邀请login，否则走user_login
 @router.post("/invite_login", summary='Invoke when invite link has been clicked', tags=['Player'], dependencies=[Depends(verify_balaton_access_token)])
 async def invite_new_user(request: InviteRequest):
+    init_data = prepare_data_to_check()
+    invite_code = init_data.get('start_param')
     inviter = request.inviter # start_param带的
     invitee = request.invitee # username带的
 
@@ -685,4 +687,3 @@ async def replace_player_card_with_random(player_name: str, request: ReplaceCard
     redis_client.hset(hands_key, player_name, json.dumps(player_hand))
 
     return {"message": "Card replaced successfully with a random new card", "cards": player_hand}
-
