@@ -32,7 +32,7 @@ async def faucet(request: LoginRequest):
     player_tokens = f"{player_name}_TOKENS"
 
     # 增加 100.5 个 tokens
-    redis_client.incrbyfloat(player_tokens, 100.5)
+    redis_client.incrbyfloat(player_tokens, 10000.5)
     new_balance = float(redis_client.get(player_tokens).decode('utf-8'))
     
     logger.info(f"Player {player_name} received 100.5 tokens. New balance: {new_balance}")

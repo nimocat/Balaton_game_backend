@@ -18,6 +18,13 @@
     </style>
 </head>
 <body>
+    <div id="game-info-container">
+        <h2>Game Information</h2>
+        <p id="game-id">Game ID: <span></span></p>
+        <p id="pool-amount">Pool Amount: <span></span></p>
+        <p id="player-amount">Player Amount: <span></span></p>
+        <p id="game-time">Game Time: <span></span></p>
+    </div>
     <h1>Recent Log Entries</h1>
     <div class="log-container">
         {% for line in logs %}
@@ -34,6 +41,28 @@
                     entry.classList.add('highlight');
                 }
             });
+
+            // Establish WebSocket connection using wss:// protocol
+            var ws = new WebSocket('wss://api.balaton.bet/ws/gameinfo');
+            ws.onopen = function() {
+                console.log('WebSocket connection established');
+                setInterval(function() {
+                    ws.send('request_gameinfo');  // Request game info every 1 second
+                }, 1000);
+            };
+            ws.onmessage = function(event) {
+                var gameInfo = JSON.parse(event.data);
+                document.querySelector('#game-id span').textContent = gameInfo.game_id;
+                document.querySelector('#pool-amount span').textContent = gameInfo.pool_amount;
+                document.querySelector('#player-amount span').textContent = gameInfo.player_amount;
+                document.querySelector('#game-time span').textContent = gameInfo.game_time;
+            };
+            ws.onclose = function() {
+                console.log('WebSocket connection closed');
+            };
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
         });
     </script>
 </body>

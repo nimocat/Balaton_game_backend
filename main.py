@@ -3,10 +3,9 @@ from database import db, redis_client
 from routers.admin import admin
 from routers.items import items
 from routers.routes import router
-import time
+from routers.sockets import game_ws
+
 from contextlib import asynccontextmanager
-import asyncio
-from datetime import datetime, timedelta
 from utils.pre_loads import load_data_from_files
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -20,6 +19,7 @@ app = FastAPI()
 app.include_router(router, prefix="/api/v1/game")
 app.include_router(admin, prefix="/api/v1/admin")
 app.include_router(items, prefix="/api/v1/items")
+app.include_router(game_ws)
 
 templates = Jinja2Templates(directory="templates")
 
