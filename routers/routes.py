@@ -305,19 +305,20 @@ async def daily_checkin(request: LoginRequest):
     if last_checkin_date:
         last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
         
-        if last_checkin_date == today:
-            # 如果上次签到是今天，返回已经签到的信息
-            return {"message": "Already checked in today."}
-        elif last_checkin_date == today - timedelta(days=1):
-            new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
-        else:
-            new_consecutive_checkins = 1
+        # if last_checkin_date == today:
+        #     # 如果上次签到是今天，返回已经签到的信息
+        #     return {"message": "Already checked in today."}
+        # elif last_checkin_date == today - timedelta(days=1):
+        new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
+        # else:
+        #     new_consecutive_checkins = 1
     else:
         new_consecutive_checkins = 1
     
     # Update longest check-in streak in Redis
     longest_checkin_key = f"{player_name}_LONGEST_CHECKIN"
     longest_checkin = redis_client.get(longest_checkin_key)
+    print(longest_checkin)
     if longest_checkin is None or new_consecutive_checkins > int(longest_checkin):
         redis_client.set(longest_checkin_key, new_consecutive_checkins)
 
@@ -544,7 +545,8 @@ async def claim_task(player_name: str, task_id: str = Path(..., description="The
     """
     # Check if the task_id is in the CANCLAIM set
     can_claim_tasks = fetch_claim_tasks(player_name)
-    if task_id.encode('utf-8') not in can_claim_tasks:
+    print(f'can_claim, {can_claim_tasks}')
+    if int(task_id.encode('utf-8')) not in can_claim_tasks:
         raise HTTPException(status_code=404, detail="Task ID not claimable or already claimed")
 
     # Retrieve the task's rewards directly using the task_id from Redis

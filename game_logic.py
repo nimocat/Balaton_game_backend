@@ -547,24 +547,30 @@ def settle_rewards(player_name: str, checkpoint: int, task_type: int) -> bool:
     return False  # Return False if no matching task was found or rewards were not sent
 
 def update_can_claim_tasks(player_name: str, task_type: str):
-    # Fetch player's consecutive checkins from MongoDB
-    player_data = db.players.find_one({"name": player_name})
-    consecutive_checkins = player_data.get('consecutive_checkins', 0)
+    # Fetch player's longest consecutive checkins from Redis
+    longest_checkin_key = f"{player_name}_LONGEST_CHECKIN"
+    longest_checkin = int(redis_client.get(longest_checkin_key) or 0)
 
-    # Fetch checkin tasks of specified type from Redis
-    checkin_tasks = redis_client.hgetall(f"checkin:{task_type}")
-    can_claim = set(redis_client.smembers(f"{player_name}_CANCLAIM"))
-    claimed = set(redis_client.smembers(f"{player_name}_CLAIMED"))
-
-    # Determine new tasks that can be claimed
+    # Fetch task IDs of the specified type from Redis
+    task_ids = redis_client.smembers(f"task_type:{task_type}")
+    can_claim = {task.decode('utf-8') for task in redis_client.smembers(f"{player_name}_CANCLAIM")}
+    print(f"can_claim, {can_claim}")
+    claimed = {task.decode('utf-8') for task in redis_client.smembers(f"{player_name}_CLAIMED")}
+    print(f"claimed, {claimed}")
+    # Determine new tasks that can be claimed based on the longest checkin
     new_can_claim = []
-    for checkpoint, task_id in checkin_tasks.items():
-        checkpoint_int = int(checkpoint)
+    for task_id in task_ids:
         task_id_str = task_id.decode('utf-8')
-
-        if consecutive_checkins >= checkpoint_int and task_id_str not in can_claim and task_id_str not in claimed:
-            new_can_claim.append(task_id_str)
-            can_claim.add(task_id_str)
+        task_key = f"task:{task_id_str}"
+        checkpoint_data = redis_client.hget(task_key, 'checkpoint')
+        print(f"checkpoint_data, {checkpoint_data}")
+        if checkpoint_data:
+            checkpoint = int(checkpoint_data.decode('utf-8'))
+            print(f"inside_task_id, {task_id_str}")
+            if task_id_str not in can_claim and task_id_str not in claimed and longest_checkin >= checkpoint:
+                print(f"not in, {checkpoint}, {task_id_str}")
+                new_can_claim.append(task_id_str)
+                can_claim.add(task_id_str)
 
     # Update CANCLAIM in Redis
     if new_can_claim:
@@ -639,7 +645,7 @@ def fetch_claim_tasks(player_name: str, task_type: Optional[int] = None, claim_t
     """
     # Fetch all task IDs from CANCLAIM
     tasks = redis_client.smembers(f"{player_name}_{claim_type}")
-    
+    print(f"tasks in {tasks}")
     if task_type is not None:
         # Fetch task IDs of the specified type
         type_tasks = redis_client.smembers(f"task_type:{task_type}")
@@ -733,5 +739,4 @@ def generate_and_store_invite_code(player_name: str) -> str:
     redis_client.set(f"{player_name}_INVITE_CODE", invite_code)
 
     return invite_code
-
 

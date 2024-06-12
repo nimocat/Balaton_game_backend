@@ -79,7 +79,7 @@ def load_quest_items():
 # load checkin表，目前也是task表，存储后，一个是id -> info map，一个是type -> [task_id] set。通过id查询信息，通过type查询id
 def load_quest():
     # Load the data from Excel file
-    checkin_df = pd.read_excel('design_docs/quest.xlsx')
+    checkin_df = pd.read_excel('design_docs/Quest.xlsx')
     
     # Use a Redis pipeline to batch the operations and reduce the number of round trips to the server
     # 以type为分类

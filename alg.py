@@ -29,20 +29,6 @@ def dealer_draw():
 def calculate_score(hand):
     joker_ranks = ranks + ['BJ', 'RJ']
 
-    def is_flush(hand):
-        suit = hand[0][0]
-        return all(card[0] == suit for card in hand if card not in ['BJ', 'RJ'])
-
-    def is_straight(hand):
-        rank_indices = sorted([joker_ranks.index(card[1:]) for card in hand if card not in ['BJ', 'RJ']])
-        return all(rank_indices[i + 1] - rank_indices[i] == 1 for i in range(len(rank_indices) - 1))
-
-    def is_straight_flush(hand):
-        return is_straight(hand) and is_flush(hand)
-
-    def is_royal_flush(hand):
-        return is_straight_flush(hand) and set(card[1:] for card in hand if card not in ['BJ', 'RJ']) == {'T', 'J', 'Q', 'K', 'A'}
-
     def get_rank_counts(hand):
         hand_ranks = [card[1:] for card in hand if card not in ['BJ', 'RJ']]
         rank_counts = {rank: hand_ranks.count(rank) for rank in ranks}
@@ -93,31 +79,27 @@ def calculate_score_without_joker(rank_counts, hand):
     def is_royal_flush(hand):
         return is_straight_flush(hand) and set(card[1:] for card in hand if card not in ['BJ', 'RJ']) == {'T', 'J', 'Q', 'K', 'A'}
 
-    buttom = 0
-    multiplier = 0
-    score = 0
     if is_royal_flush(hand):
-        score = 20
+        buttom, multiplier = redis_client.hmget("settlement:101", "buttom", "mul")
     elif is_straight_flush(hand):
-        score = 15
+        buttom, multiplier = redis_client.hmget("settlement:102", "buttom", "mul")
     elif max(rank_counts.values()) == 4:
-        score = 12
+        buttom, multiplier = redis_client.hmget("settlement:103", "buttom", "mul")
     elif sorted(rank_counts.values())[-2:] == [2, 3]:
-        score = 9
+        buttom, multiplier = redis_client.hmget("settlement:104", "buttom", "mul")
     elif is_flush(hand):
-        score = 7
+        buttom, multiplier = redis_client.hmget("settlement:105", "buttom", "mul")
     elif is_straight(hand):
-        score = 5
+        buttom, multiplier = redis_client.hmget("settlement:106", "buttom", "mul")
     elif max(rank_counts.values()) == 3:
-        score = 4
+        buttom, multiplier = redis_client.hmget("settlement:107", "buttom", "mul")
     elif list(rank_counts.values()).count(2) == 2:
-        score = 3
+        buttom, multiplier = redis_client.hmget("settlement:108", "buttom", "mul")
     elif 2 in rank_counts.values():
-        score = 2
+        buttom, multiplier = redis_client.hmget("settlement:109", "buttom", "mul")
     else:
-        score = 1
-
-    return score
+        buttom, multiplier = redis_client.hmget("settlement:110", "buttom", "mul")
+    return buttom * multiplier
 
 def combine_hands(dealer_hand, player_hand):
     # Convert string representations of hands into lists

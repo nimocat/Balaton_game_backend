@@ -148,12 +148,14 @@ class PlayerInGameResponse(BaseModel):
 class Type2TaskResponse(BaseModel):
     can_claim: List[int] = Field(..., example=[203])
     claimed: List[int] = Field(..., example=[201, 202])
+    progress: int = Field(..., example=2)
 
     class Config:
         schema_extra = {
             "example": {
                 "can_claim": [203],
-                "claimed": [201, 202]
+                "claimed": [201, 202],
+                "progress": 2
             }
         }
 
