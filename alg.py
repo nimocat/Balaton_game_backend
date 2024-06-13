@@ -2,10 +2,11 @@ import random
 import itertools
 import math
 from database import redis_client
-import json
-import concurrent.futures
-import ctypes
+from dotenv import load_dotenv
 import string
+import os
+
+load_dotenv()
 
 # 定义扑克牌，包括大小王
 suits = ['H', 'S', 'D', 'C']  # 红桃, 黑桃, 方块, 梅花
@@ -13,9 +14,9 @@ ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 jokers = ['BJ', 'RJ']  # 大小王，BJ: Black Joker, RJ: Red Joker
 
 # Constants
-PRIME1 = 7
-PRIME2 = 19
-SALT = 13601919
+PRIME1 = os.getenv('PRIME1')
+PRIME2 = os.getenv('PRIME2')
+SALT = os.getenv('SALT')
 ALPHANUMERIC_SET = string.ascii_letters + string.digits  # 62 characters
 
 def generate_hand(poker_num):

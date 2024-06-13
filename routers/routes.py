@@ -1,4 +1,6 @@
 import json
+import os
+from dotenv import load_dotenv
 from models import *
 from game_logic import *
 from alg import *
@@ -12,7 +14,82 @@ from fastapi import Request, Depends
 import hmac
 import hashlib
 
-ACCESS_TOKEN = "6970070520:AAE_0lMuJNo9Uyh9O1xZQ0LeVMBFjl3bXPE"
+load_dotenv()
+
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+
+async def handle_invite_login(invitee: str, inviter: str):
+    INVITEE_REWARD = 100
+    INVITER_REWARD = 80
+
+    invitee_collection = db.players
+    existing_invitee = invitee_collection.find_one({"name": invitee})
+
+    if existing_invitee:
+        return {"message": "Invitee already exists in the database", "status_code": 404}
+
+    player_hook.login_hook(invitee)
+
+    inviter_data = invitee_collection.find_one({"name": inviter})
+    if inviter_data:
+        referrals = inviter_data.get("referrals", [])
+        if len(referrals) >= 10:
+            return {"status_code": 404, "message": "Inviter has reached the maximum number of referrals"}
+
+    redis_client.incrby(f"{inviter}_TOKENS", INVITER_REWARD)
+    redis_client.incrby(f"{invitee}_TOKENS", INVITEE_REWARD)
+
+    # 处理邀请人的父节点，和邀请人的祖父节点
+    # Retrieve the inviter's inviter (grand-inviter) from the database
+    inviter_data = invitee_collection.find_one({"name": inviter})
+    if inviter_data and "inviter" in inviter_data:
+        grand_inviter = inviter_data["inviter"]
+        # Calculate rewards for inviter's inviter (grand-inviter)
+        grand_inviter_reward = INVITER_REWARD * 0.1
+        
+        # Check if grand_inviter's tokens exist in Redis, if not load from MongoDB
+        grand_inviter_tokens_key = f"{grand_inviter}_TOKENS"
+        if not redis_client.exists(grand_inviter_tokens_key):
+            load_player_tokens_to_redis(grand_inviter)
+        redis_client.incrbyfloat(grand_inviter_tokens_key, float(grand_inviter_reward))
+
+        # Retrieve the grand-inviter's inviter (great-grand-inviter) from the database
+        grand_inviter_data = invitee_collection.find_one({"name": grand_inviter})
+        if grand_inviter_data and "inviter" in grand_inviter_data:
+            great_grand_inviter = grand_inviter_data["inviter"]
+            # Calculate rewards for grand-inviter's inviter (great-grand-inviter)
+            great_grand_inviter_reward = INVITER_REWARD * 0.025
+            
+            # Check if great_grand_inviter's tokens exist in Redis, if not load from MongoDB
+            great_grand_inviter_tokens_key = f"{great_grand_inviter}_TOKENS"
+            if not redis_client.exists(great_grand_inviter_tokens_key):
+                load_player_tokens_to_redis(great_grand_inviter)
+            redis_client.incrbyfloat(great_grand_inviter_tokens_key, float(great_grand_inviter_reward))
+
+    # Set the inviter field for the invitee in MongoDB
+    invitee_collection.update_one(
+        {"name": invitee},
+        {"$set": {"inviter": inviter}},
+        upsert=True
+    )
+
+    # Add the invitee to the inviter's referrals list in MongoDB
+    invitee_collection.update_one(
+        {"name": inviter},
+        {"$push": {"referrals": invitee}},
+        upsert=True
+    )
+
+    # 将 Redis 数据持久化到 MongoDB 中
+    update_player_tokens_to_mongo(inviter)
+    update_player_tokens_to_mongo(invitee)
+
+    return {"message": f"Inviter {inviter} received 80 tokens. New invitee {invitee} received 100 tokens.", "status": 1}
+
+async def handle_regular_login(player_name: str):
+    # Regular login logic
+    player_hook.login_hook(player_name)
+    return JSONResponse(content=load_player_tokens(player_name))
 
 async def verify_balaton_access_token(request: Request):
     token = request.headers.get("Balaton-Access-Token")
@@ -30,11 +107,11 @@ async def verify_balaton_access_token(request: Request):
     stored_hash = redis_client.get(redis_key)
 
     if stored_hash and stored_hash.decode('utf-8') == hash_value:
-        return True
+        return data
     else:
         if check_hash(data, ACCESS_TOKEN):
             redis_client.setex(redis_key, 2 * 60 * 60, hash_value)  # Set expiry to 2 hours
-            return True
+            return data
         else:
             raise HTTPException(status_code=401, detail="Invalid hash")
 
@@ -290,6 +367,22 @@ async def user_login(request: LoginRequest):
     player_hook.login_hook(player_name)
     
     return JSONResponse(content=load_player_tokens(player_name))
+
+@router.post("/login", summary='Handle both regular and invite login', tags=['Player'])
+async def unified_login(request: LoginRequest, token_data: dict = Depends(verify_balaton_access_token)):
+    """
+    Handle both regular and invite login based on the presence of 'start_param' in the token.
+    """
+    start_param = token_data.get('start_param')
+    player_name = request.player_name
+
+    if start_param:
+        # Invite login logic
+        inviter = get_uid_by_inv_code(start_param)
+        return await handle_invite_login(player_name, inviter)
+    else:
+        # Regular login logic
+        return await handle_regular_login(player_name)
 
 # Player routers
 @router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'])
@@ -586,15 +679,15 @@ async def get_type2_tasks(player_name: str):
         # 获取今天是否可以签到
         today_checkin = False
 
-        today = datetime.utcnow().date()
-        last_checkin_date = player_data.get('last_checkin_date')
+        # today = datetime.utcnow().date()
+        # last_checkin_date = player_data.get('last_checkin_date')
         
-        if last_checkin_date:
-            last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
+        # if last_checkin_date:
+        #     last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
             
-            if last_checkin_date == today:
-                # 如果上次签到是今天，返回已经签到的信息
-                today_checkin = True
+        #     if last_checkin_date == today:
+        #         # 如果上次签到是今天，返回已经签到的信息
+        #         today_checkin = True
 
         player_data = db.players.find_one({"name": player_name}, {"consecutive_checkins": 1})
         if not player_data:
