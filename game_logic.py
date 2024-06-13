@@ -592,13 +592,14 @@ async def is_type2(task_id):
     exists = redis_client.hexists("checkin:2", task_id)
     return exists
 
-def send_rewards(player_name: str, rewards: Optional[list] = None, task_id: Optional[str] = None) -> bool:
+def send_rewards(player_name: str, rewards: Optional[list] = None, task_id: Optional[str] = None, commission: bool = False) -> bool:
     """
     Update player's rewards in Redis atomically.
     Args:
     player_name (str): The name of the player.
     rewards (Optional[list]): An optional list of tuples where each tuple contains an item_id and quantity.
     task_id (Optional[str]): The task identifier, if applicable.
+    commission (bool): Whether to apply commission. Defaults to False.
 
     Returns:
     bool: True if the transaction was successful, False otherwise.
@@ -608,7 +609,38 @@ def send_rewards(player_name: str, rewards: Optional[list] = None, task_id: Opti
             # 非任务奖励：直发
             if rewards:
                 for item_id, quantity in rewards:
+                    # 针对token的发放
                     if item_id == 1:
+                        # 如果是有迭代的
+                        if commission:
+                            # 处理邀请人的父节点，和邀请人的祖父节点
+                            # Retrieve the inviter's inviter (grand-inviter) from the database
+                            player_data = db.players.find_one({"name": player_name})
+                            if player_data and "inviter" in player_data:
+                                father_inviter = player_data["inviter"]
+                                # Calculate rewards for inviter's inviter (grand-inviter)
+                                father_inviter_reward = quantity * 0.1
+                                
+                                # Check if grand_inviter's tokens exist in Redis, if not load from MongoDB
+                                father_inviter_tokens_key = f"{father_inviter}_TOKENS"
+                                if not pipe.exists(father_inviter_tokens_key):
+                                    load_player_tokens_to_redis(father_inviter)
+                                pipe.incrbyfloat(father_inviter_tokens_key, round(float(father_inviter_reward), 2))
+                                pipe.zincrby("REWARD_RANKING_DAY", quantity, father_inviter)
+
+                                # Retrieve the grand-inviter's inviter (great-grand-inviter) from the database
+                                father_inviter_data = db.players.find_one({"name": father_inviter})
+                                if father_inviter_data and "inviter" in father_inviter_data:
+                                    grand_inviter = father_inviter_data["inviter"]
+                                    # Calculate rewards for grand-inviter's inviter (great-grand-inviter)
+                                    grand_inviter_reward = quantity * 0.025
+                                    
+                                    # Check if great_grand_inviter's tokens exist in Redis, if not load from MongoDB
+                                    grand_inviter_tokens_key = f"{grand_inviter}_TOKENS"
+                                    if not pipe.exists(grand_inviter_tokens_key):
+                                        load_player_tokens_to_redis(grand_inviter_tokens_key)
+                                    pipe.incrbyfloat(grand_inviter_tokens_key, round(float(grand_inviter_reward), 2))
+                                    pipe.zincrby("REWARD_RANKING_DAY", quantity, grand_inviter)
                         # 每日排行榜
                         pipe.zincrby("REWARD_RANKING_DAY", quantity, player_name)
                         pipe.incrbyfloat(f"{player_name}_TOKENS", float(quantity))
@@ -619,8 +651,15 @@ def send_rewards(player_name: str, rewards: Optional[list] = None, task_id: Opti
                 rewards = redis_client.hget(f"task:{task_id}", "rewards")
                 if rewards:
                     rewards_list = eval(rewards.decode('utf-8'))
-                    send_rewards(player_name, rewards_list)
+                    send_rewards(player_name, rewards_list, commission=commission)
                 settlement_type = int(redis_client.hget(f"task:{task_id}", "settlement_type").decode('utf-8'))
+                if settlement_type != 0:
+                    if not redis_client.sismember(f"{player_name}_CANCLAIM", task_id):
+                        logger.error(f"Task {task_id} cannot be claimed by {player_name} due to settlement type restrictions.")
+                        return False
+                    if redis_client.sismember(f"{player_name}_CLAIMED", task_id):
+                        logger.error(f"Task {task_id} already claimed by {player_name}")
+                        return False
                 if settlement_type == 1:
                     pipe.srem(f"{player_name}_CANCLAIM", task_id)
                     pipe.sadd(f"{player_name}_CLAIMED", task_id)
@@ -629,7 +668,7 @@ def send_rewards(player_name: str, rewards: Optional[list] = None, task_id: Opti
             pipe.execute()
         return True
     except Exception as e:
-        print(f"Failed to update rewards: {e}")
+        logger.error(f"Failed to update rewards for {player_name}: {e}")
         return False
 
 def fetch_claim_tasks(player_name: str, task_type: Optional[int] = None, claim_type: str = "CANCLAIM") -> List[int]:

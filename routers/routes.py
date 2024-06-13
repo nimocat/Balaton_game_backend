@@ -30,50 +30,21 @@ async def handle_invite_login(invitee: str, inviter: str):
 
     player_hook.login_hook(invitee)
 
-    inviter_data = invitee_collection.find_one({"name": inviter})
-    if inviter_data:
-        referrals = inviter_data.get("referrals", [])
-        if len(referrals) >= 10:
-            return {"status_code": 404, "message": "Inviter has reached the maximum number of referrals"}
+    # inviter_data = invitee_collection.find_one({"name": inviter})
+    # if inviter_data:
+    #     referrals = inviter_data.get("referrals", [])
+    #     if len(referrals) >= 10:
+    #         return {"status_code": 404, "message": "Inviter has reached the maximum number of referrals"}
 
-    redis_client.incrby(f"{inviter}_TOKENS", INVITER_REWARD)
-    redis_client.incrby(f"{invitee}_TOKENS", INVITEE_REWARD)
+    send_rewards(player_name=inviter, task_id=4002, commission=True) # 递归奖励
+    send_rewards(player_name=invitee, task_id=4001) # 不递归奖励
 
-    # 处理邀请人的父节点，和邀请人的祖父节点
-    # Retrieve the inviter's inviter (grand-inviter) from the database
-    inviter_data = invitee_collection.find_one({"name": inviter})
-    if inviter_data and "inviter" in inviter_data:
-        grand_inviter = inviter_data["inviter"]
-        # Calculate rewards for inviter's inviter (grand-inviter)
-        grand_inviter_reward = INVITER_REWARD * 0.1
-        
-        # Check if grand_inviter's tokens exist in Redis, if not load from MongoDB
-        grand_inviter_tokens_key = f"{grand_inviter}_TOKENS"
-        if not redis_client.exists(grand_inviter_tokens_key):
-            load_player_tokens_to_redis(grand_inviter)
-        redis_client.incrbyfloat(grand_inviter_tokens_key, float(grand_inviter_reward))
-
-        # Retrieve the grand-inviter's inviter (great-grand-inviter) from the database
-        grand_inviter_data = invitee_collection.find_one({"name": grand_inviter})
-        if grand_inviter_data and "inviter" in grand_inviter_data:
-            great_grand_inviter = grand_inviter_data["inviter"]
-            # Calculate rewards for grand-inviter's inviter (great-grand-inviter)
-            great_grand_inviter_reward = INVITER_REWARD * 0.025
-            
-            # Check if great_grand_inviter's tokens exist in Redis, if not load from MongoDB
-            great_grand_inviter_tokens_key = f"{great_grand_inviter}_TOKENS"
-            if not redis_client.exists(great_grand_inviter_tokens_key):
-                load_player_tokens_to_redis(great_grand_inviter)
-            redis_client.incrbyfloat(great_grand_inviter_tokens_key, float(great_grand_inviter_reward))
-
-    # Set the inviter field for the invitee in MongoDB
+    # Set the inviter field for the invitee and add the invitee to the inviter's referrals list in MongoDB using a single command
     invitee_collection.update_one(
         {"name": invitee},
         {"$set": {"inviter": inviter}},
         upsert=True
     )
-
-    # Add the invitee to the inviter's referrals list in MongoDB
     invitee_collection.update_one(
         {"name": inviter},
         {"$push": {"referrals": invitee}},
@@ -84,7 +55,7 @@ async def handle_invite_login(invitee: str, inviter: str):
     update_player_tokens_to_mongo(inviter)
     update_player_tokens_to_mongo(invitee)
 
-    return {"message": f"Inviter {inviter} received 80 tokens. New invitee {invitee} received 100 tokens.", "status": 1}
+    return {"message": f"Inviter {inviter} received {INVITER_REWARD} tokens. New invitee {invitee} received {INVITEE_REWARD} tokens.", "status": 1}
 
 async def handle_regular_login(player_name: str):
     # Regular login logic
@@ -373,6 +344,9 @@ async def unified_login(request: LoginRequest, token_data: dict = Depends(verify
     """
     Handle both regular and invite login based on the presence of 'start_param' in the token.
     """
+    # 无论如何都加载并写入data
+    player_hook.login_hook(player_name)
+
     start_param = token_data.get('start_param')
     player_name = request.player_name
 
