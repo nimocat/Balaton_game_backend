@@ -14,11 +14,12 @@ class TestPurchase(unittest.TestCase):
 
         # Simulate a player and load 1000 tokens
         cls.player_name = "test_player"
-        cls.redis_client.hset(f"{cls.player_name}_ITEMS", "1", 1000)  # Assuming money is stored with ID 1
+        cls.redis_client.set(f"{cls.player_name}_TOKENS", 1000)  # Assuming money is stored with ID 1
 
     @classmethod
     def tearDownClass(cls):
         # Clean up Redis data for test_player after tests
+        cls.redis_client.delete(f"{cls.player_name}_TOKENS")
         cls.redis_client.delete(f"{cls.player_name}_ITEMS")
 
     def test_purchase_items(self):

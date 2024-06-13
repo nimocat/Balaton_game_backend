@@ -149,13 +149,17 @@ class Type2TaskResponse(BaseModel):
     can_claim: List[int] = Field(..., example=[203])
     claimed: List[int] = Field(..., example=[201, 202])
     progress: int = Field(..., example=2)
+    today_checkin: bool = Field(..., example=False, description="Indicates if the player has checked in today")
+    consecutive_checkin_days: int = Field(..., example=5, description="The number of consecutive days the player has checked in")
 
     class Config:
         schema_extra = {
             "example": {
                 "can_claim": [203],
                 "claimed": [201, 202],
-                "progress": 2
+                "progress": 2,
+                "today_checkin": False,
+                "consecutive_checkin_days": 5
             }
         }
 

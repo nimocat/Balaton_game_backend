@@ -569,8 +569,13 @@ async def get_type2_tasks(player_name: str):
     Retrieve all type 2 task IDs in CANCLAIM and CLAIMED sets for a given player.
     """
     try:
+        player_data = db.players.find_one({"name": player_name})
+        if not player_data:
+            raise Exception("Player not found")
         type2_can_claim = fetch_claim_tasks(player_name, task_type=2)
         type2_claimed = fetch_claim_tasks(player_name, task_type=2, claim_type="CLAIMED")
+        
+        
         longest_checkin_key = f"{player_name}_LONGEST_CHECKIN"
         longest_checkin = redis_client.get(longest_checkin_key)
         if longest_checkin is None:
@@ -578,10 +583,30 @@ async def get_type2_tasks(player_name: str):
         else:
             longest_checkin = int(longest_checkin)
         
+        # 获取今天是否可以签到
+        today_checkin = False
+
+        today = datetime.utcnow().date()
+        last_checkin_date = player_data.get('last_checkin_date')
+        
+        if last_checkin_date:
+            last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
+            
+            if last_checkin_date == today:
+                # 如果上次签到是今天，返回已经签到的信息
+                today_checkin = True
+
+        player_data = db.players.find_one({"name": player_name}, {"consecutive_checkins": 1})
+        if not player_data:
+            return 0  # No record found, return 0
+        consecutive_checkin_days =  player_data.get('consecutive_checkins', 0)
+        
         return {
             "can_claim": type2_can_claim,
             "claimed": type2_claimed,
-            "progress": longest_checkin
+            "progress": longest_checkin,
+            "today_checkin": today_checkin,
+            "consecutive_checkin_days": consecutive_checkin_days
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

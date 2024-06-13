@@ -49,12 +49,17 @@ def start_new_game():
     redis_client.expire(CURRENT_GAME, DURATION)
     redis_client.publish("countdown_channel", f"Countdown started for {CURRENT_GAME} with duration {DURATION} seconds")
 
-    logger.info(f"Game ID: {game_id} Generated, New Game Start")
+    # 荷官随机五张牌，作为荷官手牌
+    dealer_hand = generate_hand(5)
+    dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
+    dealer_key = f"{game_id}_DEALER"
+    redis_client.set(dealer_key, dealer_hand_str)
+    logger.info(f"Game ID: {game_id} Generated, New Game Start, Dealer Hand: {dealer_hand_str}")
+
     # 存入数据库，所有基于redis的新数据添加，都根据CURRENT_GAME这个值来进行
 
 # 游戏引擎-单例执行
 def game_execution():
-
     # 获取LAST_GAME，拼接DEALER作为key，字符串存储荷官的五张手牌存储进入Redis
     current_game_id = redis_client.get(LAST_GAME)
     if current_game_id is None:
@@ -62,14 +67,11 @@ def game_execution():
 
     logger.info(f"Game ID: {current_game_id} executing")
 
-    # 荷官随机五张牌，作为荷官手牌
-    dealer_hand = generate_hand(5)
-    dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
-
+    # 获取dealer_hand
     current_game_id = current_game_id.decode('utf-8')
     dealer_key = f"{current_game_id}_DEALER"
-    redis_client.set(dealer_key, dealer_hand_str)
-
+    dealer_hand = redis_client.get(dealer_key)
+    dealer_hand_str = dealer_hand.decode('utf-8')
     # 设置荷官手牌过期时间
     redis_client.expire(dealer_key, 60 * 5)
     # 在redis中查询CURRENT_GAME_HANDS的所有玩家手牌，并设置过期时间
@@ -94,8 +96,6 @@ def game_execution():
     redis_client.expire(hands_key, 60 * 5)
     redis_client.expire(scores_key, 60 * 5)
 
-    logger.info(f"Dealer's hand {dealer_hand} added to game {current_game_id}")
-
     player_scores = []
     # 打印每个玩家的分数
     for player_name, hand in player_hands.items():
@@ -117,9 +117,9 @@ def game_execution():
     rewards = {}
     for i, (player_name, player_score) in enumerate(player_scores):
         if i < top_10_percent_index:
-            rewards[player_name] = top_10_percent_reward
+            rewards[player_name] = round(top_10_percent_reward, 2)
         elif i < top_25_percent_index:
-            rewards[player_name] = top_10_to_25_percent_reward
+            rewards[player_name] = round(top_10_to_25_percent_reward, 2)
         else:
             rewards[player_name] = 0
 
