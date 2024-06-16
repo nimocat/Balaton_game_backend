@@ -5,7 +5,7 @@ from database import redis_client
 import logging
 import json
 from database import db
-from models import PurchaseRequest, PurchaseResponse, OpenItemRequest, OpenItemResponse
+from models.general import PurchaseRequest, PurchaseResponse, OpenItemRequest, OpenItemResponse
 from game_logic import update_player_items_to_mongo
 
 items = APIRouter()

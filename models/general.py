@@ -78,7 +78,7 @@ class GameHistoryEntry(BaseModel):
 
 class PlayerReward(BaseModel):
     player_name: str = Field(..., example="player1", description="The name of the player")
-    reward: int = Field(..., example=500, description="The total reward the player has received")
+    reward: float = Field(..., example=500, description="The total reward the player has received")
 
 class TopDailyRewardsResponse(BaseModel):
     top_players: List[PlayerReward] = Field(

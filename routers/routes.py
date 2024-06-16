@@ -3,7 +3,8 @@ import os
 from typing import Union
 from urllib.parse import unquote
 from dotenv import load_dotenv
-from models import *
+from models.general import *
+from models.game import Game
 from game_logic import *
 from alg import *
 from fastapi import APIRouter, HTTPException, Path
@@ -13,8 +14,6 @@ from database import redis_client
 from datetime import datetime
 from hooks import player_hook
 from fastapi import Request, Depends
-import hmac
-import hashlib
 
 load_dotenv()
 
@@ -177,59 +176,11 @@ async def get_game_items():
     
     return {"items": items}
 
-@router.get("/info/shop_items", response_model=ShopItemsResponse, summary="Get all shop items", tags=["Info"])
-async def get_shop_items():
-    """
-    Retrieve all shop items stored in Redis.
-    """
-    keys = redis_client.keys("shop_item:*")
-    items = []
-
-    for key in keys:
-        item_data = redis_client.hgetall(key)
-        item = ShopItem(
-            item_id=int(key.decode('utf-8').split(":")[1]),
-            price=int(item_data[b'price'].decode('utf-8')),
-            avaliable=bool(int(item_data[b'avaliable'].decode('utf-8'))),
-            discount=float(item_data[b'discount'].decode('utf-8')),
-            num=int(item_data[b'num'].decode('utf-8'))
-        )
-        items.append(item)
-
-    return {"items": items}
-
-@router.get("/game_info", response_model=CurrentGameInfo, summary='Get the running game information', tags=['Info'])
+@router.get("/game_info", summary='Get the running game information', tags=['Info'])
 async def get_game_info(current_game_id: str = Depends(game_exist)):
 
-    # 计算当前游戏时间
-    game_showtime = redis_client.ttl("CURRENT_GAME")
-    if game_showtime == -2:
-        raise HTTPException(status_code=404, detail="No current game found.")
-    
-    # 获取奖池总金额
-    pool_key = f"{current_game_id}_POOL"
-    pool_amount = redis_client.get(pool_key)
-    if pool_amount is None:
-        pool_amount = 0
-    else:
-        pool_amount = int(pool_amount)
-
-    # 获取玩家数量
-    player_count_key = f"{current_game_id}_COUNT"
-    player_amount = redis_client.get(player_count_key)
-    if player_amount is None:
-        player_amount = 0
-    else:
-        player_amount = int(player_amount)
-
-    game_info = CurrentGameInfo(
-        game_id=current_game_id, # 当前游戏ID
-        pool_amount=pool_amount, # 奖池大小
-        player_amount=player_amount, # 玩家总数
-        game_time=game_showtime  # 返回游戏已经进行的秒数
-    )
-    
-    return JSONResponse(content=game_info.dict())
+    game = Game(game_id = current_game_id)
+    return JSONResponse(content=game.info)
 
 @router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'])
 async def get_endgame_info(request: GameInfoRequest):
@@ -731,17 +682,12 @@ async def get_farming_task_status(request: LoginRequest):
             return FarmingResponse(status="0", message="Task can start")
         
 @router.post("/player/{player_name}/replace_card", summary='Replace a card in player\'s hand by index with a random new card', tags=['Player'])
-async def replace_player_card_with_random(player_name: str, request: ReplaceCardIndexRequest):
+async def replace_player_card_with_random(player_name: str, request: ReplaceCardIndexRequest, current_game_id: str = Depends(game_exist)):
     """
     Replace a card in the player's hand at a specified index with a new random card that is not already in the hand.
     - **player_name**: The name of the player.
     - **request**: Contains the index of the card to be replaced.
     """
-    current_game_id = redis_client.get("CURRENT_GAME")
-    if current_game_id is None:
-        raise HTTPException(status_code=404, detail="No current game found.")
-    current_game_id = current_game_id.decode('utf-8')
-
     hands_key = f"{current_game_id}_HANDS"
     player_hand = redis_client.hget(hands_key, player_name)
     if player_hand is None:

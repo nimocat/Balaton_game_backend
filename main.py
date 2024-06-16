@@ -9,11 +9,20 @@ from contextlib import asynccontextmanager
 from utils.pre_loads import load_data_from_files
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from beanie import init_beanie
 # 每次游戏，记录CURRENT_GAME - str
 # CURRENT_GAME_DEALER - str
 # CURRENT_GAME_PLAYERS - list
 # CURRENT_GAME_SCORES - zset
 # CURRENT_GAME_POOL - int
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # type: ignore
+    """Initialize application services."""
+    await init_beanie(database=db, document_models=["Player"])
+    print("Startup complete")
+    yield
+    print("Shutdown complete")
 
 app = FastAPI()
 
@@ -25,7 +34,6 @@ app.add_middleware(
     allow_methods=["*"],  # 允许所有方法
     allow_headers=["*"],  # 允许所有头部
 )
-
 app.include_router(router, prefix="/api/v1/game")
 app.include_router(admin, prefix="/api/v1/admin")
 app.include_router(items, prefix="/api/v1/items")

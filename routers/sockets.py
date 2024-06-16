@@ -1,5 +1,5 @@
 from fastapi import WebSocket, APIRouter
-from models import CurrentGameInfo
+from models.general import CurrentGameInfo
 from database import redis_client
 from websocket_manager import websocket_manager
 

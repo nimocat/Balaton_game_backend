@@ -54,3 +54,19 @@ class Player(Document):
     async def by_id(cls, player_id: str) -> Optional["Player"]:
         """Get a user by email."""
         return await cls.find_one(cls.player_name == player_id)
+    
+class PlayerHistory(Document):
+    game_id: str
+    hand: Dict[str, Any]  # 假设手牌是一个字典，具体类型根据实际情况调整
+    score: int
+    reward: float
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "game_id": "game123",
+                "hand": {"card1": "value1", "card2": "value2"},
+                "score": 95,
+                "reward": 50.0
+            }
+        }

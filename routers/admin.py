@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 from database import redis_client
 import logging
 from database import db
-from models import LoginRequest
+from models.general import LoginRequest
 admin = APIRouter()
 admin_secret = "admin_secret"
 tasks_collection = db.tasks

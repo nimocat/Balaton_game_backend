@@ -80,18 +80,6 @@ def game_execution():
 
     scores_key = f"{current_game_id}_SCORES"
 
-    # # 计算和存储每个玩家的分数
-    # for player_name, hand in player_hands.items():
-    #     player_hand_str = hand.decode('utf-8')
-    #     best_hand = combine_hands(dealer_hand_str, player_hand_str)
-    #     best_hand_str = str(best_hand)
-    #     # 更新玩家最终手牌 _HANDS
-    #     redis_client.hset(f"{current_game_id}_BEST_HANDS", player_name, best_hand_str)
-
-    #     # 更新玩家得分 _SCORES
-    #     player_score = int(calculate_score(best_hand))
-    #     redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
-    
     # 设置过期时间
     redis_client.expire(hands_key, 60 * 5)
     redis_client.expire(scores_key, 60 * 5)
