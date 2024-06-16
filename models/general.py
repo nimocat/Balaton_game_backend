@@ -2,10 +2,23 @@ from alg import generate_hand
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from beanie import Document
-
+from models.game import Game
+from database import redis_client
+import json
 class Player(BaseModel):
     """User register and login auth."""
     player_name: str = Field(..., example="JohnDoe", description="Name of the player logging in")
+
+    @property
+    def hands_key(self):
+        return f'{Game.current_game}_HANDS'
+
+    @property
+    def player_hand(self):
+        return redis_client.hget(Game.hands_key, self.player_name)
+
+    def update_hand(self, new_cards: str):
+        redis_client.hset(Game.hands_key, self.player_name, json.dumps(new_cards))
 
 class PlayerPayment(Player):
     payment: int = Field(..., example=40, description="Amount paid by the player to enter the game")

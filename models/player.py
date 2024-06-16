@@ -1,7 +1,8 @@
 from beanie import Document, Indexed
 from pydantic import BaseModel, Field
 from typing import List, Dict, Annotated, Any, Optional
-
+from database import redis_client
+import json
 
 class Player(Document):
     player_name: Indexed(str, unique=True)
@@ -55,6 +56,7 @@ class Player(Document):
         """Get a user by email."""
         return await cls.find_one(cls.player_name == player_id)
     
+
 class PlayerHistory(Document):
     game_id: str
     hand: Dict[str, Any]  # 假设手牌是一个字典，具体类型根据实际情况调整

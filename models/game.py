@@ -26,6 +26,16 @@ class Game(GameInfo):
     @property
     def current_remain(cls) -> int:
         return redis_client.ttl("CURRENT_GAME")
+
+    @classmethod
+    @property
+    def current_game(cls) -> str | None:
+        return redis_client.get("CURRENT_GAME")
+    
+    @classmethod
+    @property
+    def hands_key(cls) -> str | None:
+        return f'{cls.current_game}_HANDS'
     
     @property
     def pool_amount(self) -> int:
@@ -57,6 +67,7 @@ class Game(GameInfo):
             "player_amount": self.players_amount,
             "game_time": Game.current_remain
         }
+
 
     @classmethod
     async def by_id(cls, game_id: str) -> Optional["Game"]:

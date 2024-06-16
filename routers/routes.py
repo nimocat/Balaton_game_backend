@@ -688,8 +688,8 @@ async def replace_player_card_with_random(player_name: str, request: ReplaceCard
     - **player_name**: The name of the player.
     - **request**: Contains the index of the card to be replaced.
     """
-    hands_key = f"{current_game_id}_HANDS"
-    player_hand = redis_client.hget(hands_key, player_name)
+    player = Player(player_name=player_name)
+    player_hand = player.player_hand
     if player_hand is None:
         raise HTTPException(status_code=404, detail="Player not found in the current game.")
 
@@ -717,6 +717,5 @@ async def replace_player_card_with_random(player_name: str, request: ReplaceCard
     player_hand[request.index] = new_card
 
     # Save the updated hand back to Redis
-    redis_client.hset(hands_key, player_name, json.dumps(player_hand))
-
+    player.update_hand(new_cards=player_hand)
     return {"message": "Card replaced successfully with a random new card", "cards": player_hand}
