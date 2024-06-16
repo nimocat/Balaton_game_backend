@@ -1,12 +1,16 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from dotenv import load_dotenv
 
 import unittest
-from alg import calculate_score
-
+from alg import calculate_score, validate
+from urllib.parse import unquote
+import hmac
+import hashlib
 
 # 将项目根目录添加到sys.path
+load_dotenv()
 
 
 class TestCalculateScore(unittest.TestCase):
@@ -96,6 +100,24 @@ class TestCalculateScoreWithJokers(unittest.TestCase):
         for hand, expected_score in hands_with_scores:
             with self.subTest(hand=hand):
                 self.assertEqual(calculate_score(hand), expected_score, f"Should score {expected_score} with hand {hand}")
+
+query_string = "query_id=AAGSxxA5AAAAAJLHEDkHfKui&user=%7B%22id%22%3A957400978%2C%22first_name%22%3A%22Timothy%20Ram.%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22timothyramstrong%22%2C%22language_code%22%3A%22zh-hans%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1718444813&hash=d124e97cf1ddb553ef4ba1ad1e5c3096f1139ca08b680daadb36ca94e3825955"
+hash = "d124e97cf1ddb553ef4ba1ad1e5c3096f1139ca08b680daadb36ca94e3825955"
+
+class TestValidateFunction(unittest.TestCase):
+    def setUp(self):
+        self.token = os.getenv("ACCESS_TOKEN")
+        if not self.token:
+            raise ValueError("TELEGRAM_BOT_TOKEN must be set in the .env file")
+
+        self.query_string = query_string
+        self.correct_hash = hash
+
+    def test_validate_correct_data(self):
+        self.assertTrue(validate(self.correct_hash, self.query_string, self.token))
+
+    def test_validate_incorrect_hash(self):
+        self.assertFalse(validate("incorrect_hash", self.query_string, self.token))
 
 if __name__ == '__main__':
     unittest.main()

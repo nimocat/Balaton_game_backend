@@ -60,18 +60,18 @@ def start_new_game():
 
 # 游戏引擎-单例执行
 def game_execution():
-    # 获取LAST_GAME，拼接DEALER作为key，字符串存储荷官的五张手牌存储进入Redis
+    # 获取CURRENT_GAME，拼接DEALER作为key，字符串存储荷官的五张手牌存储进入Redis
     current_game_id = redis_client.get(LAST_GAME)
     if current_game_id is None:
         raise ValueError("No current game found.")
 
     logger.info(f"Game ID: {current_game_id} executing")
 
-    # 获取dealer_hand
     current_game_id = current_game_id.decode('utf-8')
     dealer_key = f"{current_game_id}_DEALER"
-    dealer_hand = redis_client.get(dealer_key)
-    dealer_hand_str = dealer_hand.decode('utf-8')
+    dealer_hand = redis_client.get(dealer_key).decode('utf-8')
+    dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
+    logger.info(f"Dealer's hand {dealer_hand_str} string")
     # 设置荷官手牌过期时间
     redis_client.expire(dealer_key, 60 * 5)
     # 在redis中查询CURRENT_GAME_HANDS的所有玩家手牌，并设置过期时间
@@ -80,17 +80,17 @@ def game_execution():
 
     scores_key = f"{current_game_id}_SCORES"
 
-    # 计算和存储每个玩家的分数
-    for player_name, hand in player_hands.items():
-        player_hand_str = hand.decode('utf-8')
-        best_hand = combine_hands(dealer_hand_str, player_hand_str)
-        best_hand_str = str(best_hand)
-        # 更新玩家最终手牌 _HANDS
-        redis_client.hset(f"{current_game_id}_BEST_HANDS", player_name, best_hand_str)
+    # # 计算和存储每个玩家的分数
+    # for player_name, hand in player_hands.items():
+    #     player_hand_str = hand.decode('utf-8')
+    #     best_hand = combine_hands(dealer_hand_str, player_hand_str)
+    #     best_hand_str = str(best_hand)
+    #     # 更新玩家最终手牌 _HANDS
+    #     redis_client.hset(f"{current_game_id}_BEST_HANDS", player_name, best_hand_str)
 
-        # 更新玩家得分 _SCORES
-        player_score = int(calculate_score(best_hand))
-        redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
+    #     # 更新玩家得分 _SCORES
+    #     player_score = int(calculate_score(best_hand))
+    #     redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
     
     # 设置过期时间
     redis_client.expire(hands_key, 60 * 5)
@@ -100,6 +100,7 @@ def game_execution():
     # 打印每个玩家的分数
     for player_name, hand in player_hands.items():
         player_hand = hand.decode('utf-8')
+        print(player_name, hand)
         player_score = int(redis_client.zscore(scores_key, player_name.decode('utf-8')))
         player_scores.append((player_name.decode('utf-8'), player_score))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score}")

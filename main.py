@@ -4,7 +4,7 @@ from routers.admin import admin
 from routers.items import items
 from routers.routes import router
 from routers.sockets import game_ws
-
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from utils.pre_loads import load_data_from_files
 from fastapi.responses import HTMLResponse
@@ -16,6 +16,16 @@ from fastapi.templating import Jinja2Templates
 # CURRENT_GAME_POOL - int
 
 app = FastAPI()
+
+# Add CORS middleware configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 允许所有源
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有方法
+    allow_headers=["*"],  # 允许所有头部
+)
+
 app.include_router(router, prefix="/api/v1/game")
 app.include_router(admin, prefix="/api/v1/admin")
 app.include_router(items, prefix="/api/v1/items")
@@ -41,4 +51,4 @@ if __name__ == "__main__":
 
     # 启动FastAPI应用
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)

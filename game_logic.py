@@ -183,6 +183,11 @@ def player_entrance(player_name, card_num):
 
     # 计算开销
     cost = 40 if card_num == 3 else 20
+    player_tokens = f"{player_name}_TOKENS"
+
+    tokens = redis_client.get(player_tokens)
+    if tokens is None or float(tokens) < cost:
+        return {"error": "Insufficient tokens"}
 
     # 获取当前游戏的ID
     current_game = redis_client.get("CURRENT_GAME")
@@ -192,32 +197,33 @@ def player_entrance(player_name, card_num):
     current_game = current_game.decode('utf-8')
 
     # 检查玩家的 ITEMS 中的 token 数量是否足够
-    player_items_key = f"{player_name}_ITEMS"
-    player_tokens = f"{player_name}_TOKENS"
+    dealer_key = f"{current_game}_DEALER"
+    dealer_hand_str = str(redis_client.get(dealer_key).decode('UTF-8'))
 
+    best_hand = combine_hands(dealer_hand_str, hand_str)
+    best_hand_str = str(best_hand)
+    player_score = int(calculate_score(best_hand))
+    scores_key = f"{current_game}_SCORES"
     # 创建一个 Redis 事务（Pipeline）
     with redis_client.pipeline() as pipe:
         while True:
             try:
                 # Watch the keys that will be modified
-                pipe.watch(f"{current_game}_HANDS", f"{current_game}_POOL", f"{player_name}_ITEMS", f"{current_game}_COUNT", player_tokens)
+                pipe.watch(player_tokens)
 
                 # 开始事务
                 pipe.multi()
 
                 # 将玩家及其对应的手牌加入当前游戏的 HANDS hash table
                 pipe.hset(f"{current_game}_HANDS", player_name, hand_str)
-
+                # 更新玩家最终手牌 _HANDS
+                pipe.hset(f"{current_game}_BEST_HANDS", player_name, best_hand_str)
+                pipe.zadd(scores_key, {player_name.encode('utf-8'): player_score})
                 # 将 POOL 的数字增加相应的 cost
                 pipe.incrby(f"{current_game}_POOL", cost)
-
                 # 注意，玩家需要在连接完钱包或者进入界面时，就把他的信息加载到redis中
                 # 将玩家的 ITEMS 中的 token 数量减少相应的 cost
-                tokens = redis_client.get(player_tokens)
-                if tokens is None or float(tokens) < cost:
-                    return {"error": "Insufficient tokens"}
                 pipe.incrbyfloat(player_tokens, -cost)
-
                 # 将当前游戏的 COUNT 增加1
                 pipe.incr(f"{current_game}_COUNT")
 
@@ -229,7 +235,6 @@ def player_entrance(player_name, card_num):
                 continue
     logger.info(f"Player {player_name} finished enter game, data updated to Redis")
     return hand_str
-
     
 # 模拟测试
 def player_entry():
@@ -279,7 +284,6 @@ def player_entry():
 
 # 游戏引擎单例
 def game_execution():
-
     # 获取CURRENT_GAME，拼接DEALER作为key，字符串存储荷官的五张手牌存储进入Redis
     current_game_id = redis_client.get("CURRENT_GAME")
     if current_game_id is None:
@@ -287,15 +291,11 @@ def game_execution():
 
     logger.info(f"Game ID: {current_game_id} executing")
 
-    # 荷官随机五张牌，作为荷官手牌
-    dealer_hand = generate_hand(5)
-    dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
-    logger.info(f"Dealer's hand {dealer_hand_str} string")
-
     current_game_id = current_game_id.decode('utf-8')
     dealer_key = f"{current_game_id}_DEALER"
-    redis_client.set(dealer_key, dealer_hand_str)
-
+    dealer_hand = redis_client.set(dealer_key).decode('utf-8')
+    dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
+    logger.info(f"Dealer's hand {dealer_hand_str} string")
     # 设置荷官手牌过期时间
     redis_client.expire(dealer_key, 60 * 5)
     # 在redis中查询CURRENT_GAME_HANDS的所有玩家手牌，并设置过期时间
@@ -304,19 +304,19 @@ def game_execution():
 
     scores_key = f"{current_game_id}_SCORES"
 
-    # 计算和存储每个玩家的分数
-    for player_name, hand in player_hands.items():
-        print(hand)
-        player_hand_str = hand.decode('utf-8')
-        best_hand = combine_hands(dealer_hand_str, player_hand_str)
-        best_hand_str = str(best_hand)
-        print("best", best_hand_str)
-        # 更新玩家最终手牌 _HANDS
-        redis_client.hset(f"{current_game_id}_BEST_HANDS", player_name, best_hand_str)
+    # # 计算和存储每个玩家的分数
+    # for player_name, hand in player_hands.items():
+    #     print(hand)
+    #     player_hand_str = hand.decode('utf-8')
+    #     best_hand = combine_hands(dealer_hand_str, player_hand_str)
+    #     best_hand_str = str(best_hand)
+    #     print("best", best_hand_str)
+    #     # 更新玩家最终手牌 _HANDS
+    #     redis_client.hset(f"{current_game_id}_BEST_HANDS", player_name, best_hand_str)
 
-        # 更新玩家得分 _SCORES
-        player_score = int(calculate_score(best_hand))
-        redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
+    #     # 更新玩家得分 _SCORES
+    #     player_score = int(calculate_score(best_hand))
+    #     redis_client.zadd(scores_key, {player_name.decode('utf-8'): player_score})
     
     # 设置过期时间
     redis_client.expire(hands_key, 60 * 5)

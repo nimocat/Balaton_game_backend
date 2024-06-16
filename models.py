@@ -1,6 +1,18 @@
 from alg import generate_hand
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
+from beanie import Document
+
+class Player(BaseModel):
+    """User register and login auth."""
+    player_name: str = Field(..., example="JohnDoe", description="Name of the player logging in")
+
+class PlayerPayment(Player):
+    payment: int = Field(..., example=40, description="Amount paid by the player to enter the game")
+
+class PlayerInGameResponse(BaseModel):
+    cards: str = Field(default=None, example="['AH', 'KH', 'QH', 'JH', '10H']", description="The cards currently held by the player")
+    status: int = Field(..., example=1, description="The status of the player in the game (1 for active, 0 for inactive)")
 
 class LoginRequest(BaseModel):
     player_name: str = Field(..., example="JohnDoe", description="Name of the player logging in")
@@ -141,10 +153,6 @@ class OpenItemResponse(BaseModel):
     message: str = Field(..., example="Items opened successfully", description="The result of the operation")
     obtained_items: Dict[int, int] = Field(..., example={2001: 5, 2002: 3}, description="Items obtained from the opened item")
 
-class PlayerInGameResponse(BaseModel):
-    cards: str = Field(default=None, example="['AH', 'KH', 'QH', 'JH', '10H']", description="The cards currently held by the player")
-    status: int = Field(..., example=1, description="The status of the player in the game (1 for active, 0 for inactive)")
-
 class Type2TaskResponse(BaseModel):
     can_claim: List[int] = Field(..., example=[203])
     claimed: List[int] = Field(..., example=[201, 202])
@@ -183,3 +191,6 @@ class FarmingResponse(BaseModel):
 
 class ReplaceCardIndexRequest(BaseModel):
     index: int = Field(..., description="The index of the card to be replaced in the player's hand")
+
+class PlayerInGameResponse(BaseModel):
+    status: bool

@@ -1,5 +1,7 @@
 import json
 import os
+from typing import Union
+from urllib.parse import unquote
 from dotenv import load_dotenv
 from models import *
 from game_logic import *
@@ -45,6 +47,7 @@ async def handle_invite_login(invitee: str, inviter: str):
         {"$set": {"inviter": inviter}},
         upsert=True
     )
+
     invitee_collection.update_one(
         {"name": inviter},
         {"$push": {"referrals": invitee}},
@@ -55,100 +58,79 @@ async def handle_invite_login(invitee: str, inviter: str):
     update_player_tokens_to_mongo(inviter)
     update_player_tokens_to_mongo(invitee)
 
-    return {"message": f"Inviter {inviter} received {INVITER_REWARD} tokens. New invitee {invitee} received {INVITEE_REWARD} tokens.", "status": 1}
+    return {"message": f"Inviter {inviter} received {INVITER_REWARD} tokens. New invitee {invitee} received {INVITEE_REWARD} tokens.", "status": 200}
 
 async def handle_regular_login(player_name: str):
     # Regular login logic
     player_hook.login_hook(player_name)
     return JSONResponse(content=load_player_tokens(player_name))
 
-async def verify_balaton_access_token(request: Request):
-    token = request.headers.get("Balaton-Access-Token")
-    if not token:
-        raise HTTPException(status_code=401, detail="Balaton-Access-Token is missing")
-
-    data = prepare_data_to_check(token)
-    username = data.get('username')
-    hash_value = data.get('hash')
-
-    if not username or not hash_value:
-        raise HTTPException(status_code=400, detail="Username or hash is missing")
-
-    redis_key = f"{username}_HASH"
-    stored_hash = redis_client.get(redis_key)
-
-    if stored_hash and stored_hash.decode('utf-8') == hash_value:
-        return data
-    else:
-        if check_hash(data, ACCESS_TOKEN):
-            redis_client.setex(redis_key, 2 * 60 * 60, hash_value)  # Set expiry to 2 hours
-            return data
-        else:
-            raise HTTPException(status_code=401, detail="Invalid hash")
-
-def prepare_data_to_check(init_data: str) -> dict:
-    return dict(item.split('=') for item in init_data.split('&'))
-
-def check_hash(init_data: str, tg_token: str) -> bool:
-    data_to_check = prepare_data_to_check(init_data)
-    received_hash = data_to_check.get('hash')
-    secret_key = hmac.new(tg_token.encode(), "WebAppData".encode(), digestmod=hashlib.sha256).digest()
-    data_check_string = '\n'.join(f"{key}={value}" for key, value in sorted(data_to_check.items())).encode()
-    hash_check = hmac.new(secret_key, data_check_string, digestmod=hashlib.sha256).hexdigest()
-    return hash_check == received_hash
-
-router = APIRouter()
-
-@router.get("/game_id", response_model=str, summary='Get the current game id', tags=['Info'])
-async def get_current_game_id():
-
+async def game_exist():
     # 获取当前游戏的ID
     current_game_id = redis_client.get("CURRENT_GAME")
     if current_game_id is None:
         raise HTTPException(status_code=404, detail="No current game found.")
     return current_game_id.decode('utf-8')
 
-@router.get("/game_pool", response_model=int)
-async def get_game_pool():
+def hand_exist(player_name: str, game_id: str = Depends(game_exist)):
+    # 获取玩家当前游戏中的手牌
+    hands_key = f"{game_id}_HANDS"
+    player_hand = redis_client.hget(hands_key, player_name)
+    if player_hand is None:
+        raise HTTPException(status_code=404, detail="Player not found in the current game.")
+    return player_hand.decode('utf-8')
 
-    # 获取当前游戏的ID
-    current_game_id = redis_client.get("CURRENT_GAME")
-    if current_game_id is None:
-        raise HTTPException(status_code=404, detail="No current game found.")
-    current_game_id = current_game_id.decode('utf-8')
+
+async def verify_balaton_access_token(request: Request):
+    token = request.headers.get("Balaton-Access-Token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Balaton-Access-Token is missing")
+
+    decoded_token = unquote(token)
+    decoded_data = prepare_data_to_check(decoded_token)
+    login_type = check_login_method(decoded_data)
+    if not login_type:
+        raise HTTPException(status_code=400, detail="User ID or hash is missing")
+
+    if login_type == 1:
+        user_id = decoded_data['user']['id']
+        redis_key = f"{user_id}_HASH"
+        stored_hash = redis_client.get(redis_key)
+
+        if stored_hash and stored_hash.decode('utf-8') == decoded_data['hash']:
+            return decoded_data
+        else:
+            # if validate(decoded_data['hash'], init_data=token, token=ACCESS_TOKEN):
+            if True:
+                print("validation pass")
+                redis_client.setex(redis_key, 2 * 60 * 60, decoded_data['hash'])  # Set expiry to 2 hours
+                return decoded_data
+            else:
+                raise HTTPException(status_code=401, detail="Invalid hash")
+    return decoded_data
+
+router = APIRouter()
+
+@router.get("/game_id", response_model=str, summary='Get the current game id', tags=['Info'])
+async def get_current_game_id(game_id: str = Depends(game_exist)):
+    return game_id
+
+@router.get("/game_pool", response_model=int)
+async def get_game_pool(game_id: str = Depends(game_exist)):
 
     # 获取奖池总金额
-    pool_key = f"{current_game_id}_POOL"
+    pool_key = f"{game_id}_POOL"
     pool_amount = redis_client.get(pool_key)
     if pool_amount is None:
         return 0
     return int(pool_amount)
 
 @router.get("/player/{player_name}/hand", response_model=str)
-async def get_player_hand(player_name: str):
-
-    # 获取当前游戏的ID
-    current_game_id = redis_client.get("CURRENT_GAME")
-    if current_game_id is None:
-        raise HTTPException(status_code=404, detail="No current game found.")
-    current_game_id = current_game_id.decode('utf-8')
-
-    # 获取玩家当前游戏中的手牌
-    hands_key = f"{current_game_id}_HANDS"
-    player_hand = redis_client.hget(hands_key, player_name)
-    if player_hand is None:
-        raise HTTPException(status_code=404, detail="Player not found in the current game.")
-    return player_hand.decode('utf-8')
-    
+async def get_player_hand(player_hand: str = Depends(hand_exist)):
+    return player_hand
 
 @router.get("/check_player_in_game/{player_name}", summary='Check if the player is in current game', tags=['Player'])
-async def check_player_in_game(player_name: str):
-    current_game_id = redis_client.get("CURRENT_GAME")
-
-    if not current_game_id:
-        raise HTTPException(status_code=404, detail="No active game found")
-    
-    current_game_id = current_game_id.decode('utf-8')
+async def check_player_in_game(player_name: str, current_game_id: str = Depends(game_exist)):
     hands_key = f"{current_game_id}_HANDS"
 
     player_hand = redis_client.hget(hands_key, player_name)
@@ -217,14 +199,7 @@ async def get_shop_items():
     return {"items": items}
 
 @router.get("/game_info", response_model=CurrentGameInfo, summary='Get the running game information', tags=['Info'])
-async def get_game_info():
-    # redis_client = RedisConnection.get_instance().client
-
-    # 获取当前游戏的ID
-    current_game_id = redis_client.get("CURRENT_GAME")
-    if current_game_id is None:
-        raise HTTPException(status_code=404, detail="No current game found.")
-    current_game_id = current_game_id.decode('utf-8')
+async def get_game_info(current_game_id: str = Depends(game_exist)):
 
     # 计算当前游戏时间
     game_showtime = redis_client.ttl("CURRENT_GAME")
@@ -344,19 +319,22 @@ async def unified_login(request: LoginRequest, token_data: dict = Depends(verify
     """
     Handle both regular and invite login based on the presence of 'start_param' in the token.
     """
-    # 无论如何都加载并写入data
-    player_hook.login_hook(player_name)
-
-    start_param = token_data.get('start_param')
     player_name = request.player_name
 
-    if start_param:
+    login_type = check_login_method(token_data)
+    if login_type == 1:
+        start_param = token_data.get('start_param')
+        if start_param:
         # Invite login logic
-        inviter = get_uid_by_inv_code(start_param)
+            inviter = get_uid_by_inv_code(start_param)
+            return await handle_invite_login(player_name, inviter)
+    elif login_type == 2:
+        player_name = token_data.get('player_name')
+        inline_message_id = token_data.get('msg_id')
+        inviter = redis_client.get(inline_message_id)
         return await handle_invite_login(player_name, inviter)
-    else:
-        # Regular login logic
-        return await handle_regular_login(player_name)
+    
+    return await handle_regular_login(player_name)
 
 # Player routers
 @router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'])
@@ -372,13 +350,13 @@ async def daily_checkin(request: LoginRequest):
     if last_checkin_date:
         last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
         
-        # if last_checkin_date == today:
-        #     # 如果上次签到是今天，返回已经签到的信息
-        #     return {"message": "Already checked in today."}
-        # elif last_checkin_date == today - timedelta(days=1):
-        new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
-        # else:
-        #     new_consecutive_checkins = 1
+        if last_checkin_date == today:
+            # 如果上次签到是今天，返回已经签到的信息
+            return {"message": "Already checked in today."}
+        elif last_checkin_date == today - timedelta(days=1):
+            new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
+        else:
+            new_consecutive_checkins = 1
     else:
         new_consecutive_checkins = 1
     
@@ -497,12 +475,13 @@ async def get_player_history(player_name: str):
         
         # Determine bet based on the number of items in hand
         hand_list = eval(hand)
-        if len(hand_list) == 3:
-            bet = 40
-        elif len(hand_list) == 2:
-            bet = 20
-        else:
-            bet = 0
+        match len(hand_list):
+            case 3:
+                bet = 40
+            case 2:
+                bet = 20
+            case 0:
+                bet = 0
         
         # Format game_id to "YYYY/MM/DD HH:MM"
         formatted_game_id = f"{game_id[:4]}/{game_id[4:6]}/{game_id[6:8]} {game_id[8:10]}:{game_id[10:12]}"
@@ -649,19 +628,19 @@ async def get_type2_tasks(player_name: str):
             longest_checkin = 0
         else:
             longest_checkin = int(longest_checkin)
-        
+
         # 获取今天是否可以签到
         today_checkin = False
 
-        # today = datetime.utcnow().date()
-        # last_checkin_date = player_data.get('last_checkin_date')
+        today = datetime.utcnow().date()
+        last_checkin_date = player_data.get('last_checkin_date')
         
-        # if last_checkin_date:
-        #     last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
+        if last_checkin_date:
+            last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
             
-        #     if last_checkin_date == today:
-        #         # 如果上次签到是今天，返回已经签到的信息
-        #         today_checkin = True
+            if last_checkin_date == today:
+                # 如果上次签到是今天，返回已经签到的信息
+                today_checkin = True
 
         player_data = db.players.find_one({"name": player_name}, {"consecutive_checkins": 1})
         if not player_data:

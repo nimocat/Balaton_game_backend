@@ -1,6 +1,11 @@
+import hashlib
+import hmac
+import json
 import random
 import itertools
 import math
+from typing import Union
+from urllib.parse import unquote
 from database import redis_client
 from dotenv import load_dotenv
 import string
@@ -14,9 +19,9 @@ ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 jokers = ['BJ', 'RJ']  # 大小王，BJ: Black Joker, RJ: Red Joker
 
 # Constants
-PRIME1 = os.getenv('PRIME1')
-PRIME2 = os.getenv('PRIME2')
-SALT = os.getenv('SALT')
+PRIME1 = int(os.getenv('PRIME1'))
+PRIME2 = int(os.getenv('PRIME2'))
+SALT = int(os.getenv('SALT'))
 ALPHANUMERIC_SET = string.ascii_letters + string.digits  # 62 characters
 
 def generate_hand(poker_num):
@@ -100,6 +105,10 @@ def calculate_score_without_joker(rank_counts, hand):
         buttom, multiplier = redis_client.hmget("settlement:109", "buttom", "mul")
     else:
         buttom, multiplier = redis_client.hmget("settlement:110", "buttom", "mul")
+    # Convert bytes to integers
+    buttom = float(buttom)
+    multiplier = float(multiplier)
+
     return buttom * multiplier
 
 def combine_hands(dealer_hand, player_hand):
@@ -257,3 +266,62 @@ def get_uid_by_inv_code(inv_code):
     uid = (uid - SALT) // PRIME1
 
     return uid
+
+def prepare_data_to_check(init_data: Union[str, dict]) -> dict:
+    if isinstance(init_data, str):
+        data_parts = dict(item.split('=') for item in init_data.split('&'))
+    elif isinstance(init_data, dict):
+        data_parts = init_data
+    else:
+        raise ValueError("init_data must be either a str or dict")
+
+    if 'user' in data_parts and isinstance(data_parts['user'], str):
+        try:
+            data_parts['user'] = json.loads(data_parts['user'])
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON format in 'user' field")
+    return data_parts
+
+def check_login_method(data_parts):
+    # 检查是否存在'user'字段且'user'字段是一个字典，同时存在'hash'字段
+    if 'user' in data_parts and isinstance(data_parts['user'], dict) and 'id' in data_parts['user'] and 'hash' in data_parts:
+        return 1  # 类型 1
+    # 检查是否同时存在'player_name'和'msg_id'字段
+    elif 'player_name' in data_parts and 'msg_id' in data_parts:
+        return 2  # 类型 2
+    # 如果上述条件都不满足，返回类型 0
+    return 0  # 类型 0
+
+    
+def check_hash(init_data: Union[str, dict], tg_token: str) -> bool:
+    data_to_check = prepare_data_to_check(init_data)
+    received_hash = data_to_check.get('hash')
+    secret_key = hmac.new(tg_token.encode(), "WebAppData".encode(), digestmod=hashlib.sha256).digest()
+    data_check_string = '\n'.join(f"{key}={value}" for key, value in sorted(data_to_check.items()) if key != 'hash').encode()
+    hash_check = hmac.new(secret_key, data_check_string, digestmod=hashlib.sha256).hexdigest()
+    return hash_check == received_hash
+
+def validate(hash_str, init_data, token, c_str="WebAppData"):
+    """
+    Validates the data received from the Telegram web app, using the
+    method documented here: 
+    https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app
+
+    hash_str - the has string passed by the webapp
+    init_data - the query string passed by the webapp
+    token - Telegram bot's token
+    c_str - constant string (default = "WebAppData")
+    """
+
+    init_data = sorted([ chunk.split("=") 
+          for chunk in unquote(init_data).split("&") 
+            if chunk[:len("hash=")]!="hash="],
+        key=lambda x: x[0])
+    init_data = "\n".join([f"{rec[0]}={rec[1]}" for rec in init_data])
+
+    secret_key = hmac.new(c_str.encode(), token.encode(),
+        hashlib.sha256 ).digest()
+    data_check = hmac.new( secret_key, init_data.encode(),
+        hashlib.sha256)
+
+    return data_check.hexdigest() == hash_str
