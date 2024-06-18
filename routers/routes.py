@@ -1,4 +1,4 @@
-import json
+import asyncio
 import os
 from typing import Union
 from urllib.parse import unquote
@@ -20,34 +20,24 @@ load_dotenv()
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 
 async def handle_invite_login(invitee: str, inviter: str):
-    INVITEE_REWARD = 100
-    INVITER_REWARD = 80
-
     invitee_collection = db.players
-    existing_invitee = invitee_collection.find_one({"name": invitee})
+    existing_invitee = await invitee_collection.find_one({"name": invitee})
 
     if existing_invitee:
         return {"message": "Invitee already exists in the database", "status_code": 404}
 
     player_hook.login_hook(invitee)
-
-    # inviter_data = invitee_collection.find_one({"name": inviter})
-    # if inviter_data:
-    #     referrals = inviter_data.get("referrals", [])
-    #     if len(referrals) >= 10:
-    #         return {"status_code": 404, "message": "Inviter has reached the maximum number of referrals"}
-
     send_rewards(player_name=inviter, task_id=4002, commission=True) # 递归奖励
     send_rewards(player_name=invitee, task_id=4001) # 不递归奖励
 
     # Set the inviter field for the invitee and add the invitee to the inviter's referrals list in MongoDB using a single command
-    invitee_collection.update_one(
+    await invitee_collection.update_one(
         {"name": invitee},
         {"$set": {"inviter": inviter}},
         upsert=True
     )
 
-    invitee_collection.update_one(
+    await invitee_collection.update_one(
         {"name": inviter},
         {"$push": {"referrals": invitee}},
         upsert=True
@@ -57,7 +47,7 @@ async def handle_invite_login(invitee: str, inviter: str):
     update_player_tokens_to_mongo(inviter)
     update_player_tokens_to_mongo(invitee)
 
-    return {"message": f"Inviter {inviter} received {INVITER_REWARD} tokens. New invitee {invitee} received {INVITEE_REWARD} tokens.", "status": 200}
+    return {"message": "success", "status": 200}
 
 async def handle_regular_login(player_name: str):
     # Regular login logic
@@ -69,7 +59,7 @@ async def game_exist():
     current_game_id = redis_client.get("CURRENT_GAME")
     if current_game_id is None:
         raise HTTPException(status_code=404, detail="No current game found.")
-    return current_game_id.decode('utf-8')
+    return Game(game_id=current_game_id.decode('utf-8'))
 
 def hand_exist(player_name: str, game_id: str = Depends(game_exist)):
     # 获取玩家当前游戏中的手牌
@@ -78,7 +68,6 @@ def hand_exist(player_name: str, game_id: str = Depends(game_exist)):
     if player_hand is None:
         raise HTTPException(status_code=404, detail="Player not found in the current game.")
     return player_hand.decode('utf-8')
-
 
 async def verify_balaton_access_token(request: Request):
     token = request.headers.get("Balaton-Access-Token")
@@ -111,32 +100,27 @@ async def verify_balaton_access_token(request: Request):
 router = APIRouter()
 
 @router.get("/game_id", response_model=str, summary='Get the current game id', tags=['Info'])
-async def get_current_game_id(game_id: str = Depends(game_exist)):
-    return game_id
+async def get_current_game_id(game: Game = Depends(game_exist)):
+    return game.id
 
 @router.get("/game_pool", response_model=int)
-async def get_game_pool(game_id: str = Depends(game_exist)):
-
-    # 获取奖池总金额
-    pool_key = f"{game_id}_POOL"
-    pool_amount = redis_client.get(pool_key)
-    if pool_amount is None:
-        return 0
-    return int(pool_amount)
+async def get_game_pool(game: Game = Depends(game_exist)):
+    return game.pool_amount
 
 @router.get("/player/{player_name}/hand", response_model=str)
 async def get_player_hand(player_hand: str = Depends(hand_exist)):
     return player_hand
 
 @router.get("/check_player_in_game/{player_name}", summary='Check if the player is in current game', tags=['Player'])
-async def check_player_in_game(player_name: str, current_game_id: str = Depends(game_exist)):
-    hands_key = f"{current_game_id}_HANDS"
+async def check_player_in_game(player_name: str, game: Game = Depends(game_exist)):
+    hands_key = f"{game.id}_HANDS"
 
     player_hand = redis_client.hget(hands_key, player_name)
     if player_hand:
         return JSONResponse(content={"cards": player_hand.decode('utf-8'), "status": 1})
     else:
         return JSONResponse(content={"status": 0})
+
 
 @router.get("/info/top_daily_rewards", response_model=TopDailyRewardsResponse, summary="Get top daily rewards", tags=["Info"])
 async def get_top_daily_rewards():
@@ -177,9 +161,7 @@ async def get_game_items():
     return {"items": items}
 
 @router.get("/game_info", summary='Get the running game information', tags=['Info'])
-async def get_game_info(current_game_id: str = Depends(game_exist)):
-
-    game = Game(game_id = current_game_id)
+async def get_game_info(game: Game = Depends(game_exist)):
     return JSONResponse(content=game.info)
 
 @router.post("/get_endgame_info", response_model=GameInfoResponse, summary='Get the ended game information', tags=['Info'])
@@ -291,7 +273,7 @@ async def unified_login(request: LoginRequest, token_data: dict = Depends(verify
 @router.post("/daily_checkin", summary='Invoke once player click on checkin button', tags=['Player'])
 async def daily_checkin(request: LoginRequest):
     player_name = request.player_name
-    player_data = db.players.find_one({"name": player_name})
+    player_data = await db.players.find_one({"name": player_name})
     if not player_data:
         raise Exception("Player not found")
 
@@ -374,7 +356,7 @@ async def player_entrance_route(request: EntranceRequest):
         card_num = 3
     else:
         raise HTTPException(status_code=400, detail="Invalid payment amount")
-
+    print("entering game", player_name, payment)
     cards = player_entrance(player_name, card_num)
     return {"message": f"Player {player_name} entered the game with {card_num} cards.", "cards": cards} # 返回手牌
 
@@ -411,7 +393,7 @@ async def get_player_history(player_name: str):
     Retrieve the game history for a given player.
     - **player_name**: The name of the player.
     """
-    player = db.players.find_one({"name": player_name})
+    player = await db.players.find_one({"name": player_name})
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")
 
@@ -505,14 +487,14 @@ async def invite_new_user(request: LoginRequest):
             redis_client.incrbyfloat(great_grand_inviter_tokens_key, float(great_grand_inviter_reward))
 
     # Set the inviter field for the invitee in MongoDB
-    invitee_collection.update_one(
+    await invitee_collection.update_one(
         {"name": invitee},
         {"$set": {"inviter": inviter}},
         upsert=True
     )
 
     # Add the invitee to the inviter's referrals list in MongoDB
-    invitee_collection.update_one(
+    await invitee_collection.update_one(
         {"name": inviter},
         {"$push": {"referrals": invitee}},
         upsert=True
@@ -541,23 +523,8 @@ async def claim_task(player_name: str, task_id: str = Path(..., description="The
     Claim a checkin task reward if the task_id is in the player's CANCLAIM set.
     """
     # Check if the task_id is in the CANCLAIM set
-    can_claim_tasks = fetch_claim_tasks(player_name)
-    print(f'can_claim, {can_claim_tasks}')
-    if int(task_id.encode('utf-8')) not in can_claim_tasks:
-        raise HTTPException(status_code=404, detail="Task ID not claimable or already claimed")
-
-    # Retrieve the task's rewards directly using the task_id from Redis
-    task_rewards = redis_client.hget(f"task:{task_id}", "rewards")
-    if not task_rewards:
-        raise HTTPException(status_code=404, detail="Task rewards not found for given task ID")
-    # Decode and evaluate the rewards string to convert it into a dictionary
-    rewards = eval(task_rewards.decode('utf-8'))
-
-    # Use Redis transaction to ensure atomicity
-    send_rewards(player_name=player_name, task_id=task_id)
-
-    # Update MongoDB with the new items (synchronize Redis to MongoDB)
-    update_player(player_name=player_name)
+    player = Player(player_name=player_name)
+    rewards = player.claim_task(task_id=task_id)
     return {"status_code":"200", "message": "Task claimed successfully", "rewards": rewards}
 
 @router.get("/tasks/{player_name}/checkin_claim_list", response_model=Type2TaskResponse, summary="Get all type 2 tasks in CANCLAIM and CLAIMED", tags=['Task'])
@@ -566,44 +533,21 @@ async def get_type2_tasks(player_name: str):
     Retrieve all type 2 task IDs in CANCLAIM and CLAIMED sets for a given player.
     """
     try:
-        player_data = db.players.find_one({"name": player_name})
-        if not player_data:
-            raise Exception("Player not found")
+        player = Player(player_name=player_name)
+
+        today_checkin, consecutive_checkins = await asyncio.gather(
+            player.checked_in(),
+            player.consecutive_checkins()
+        )
+
         type2_can_claim = fetch_claim_tasks(player_name, task_type=2)
         type2_claimed = fetch_claim_tasks(player_name, task_type=2, claim_type="CLAIMED")
-        
-        
-        longest_checkin_key = f"{player_name}_LONGEST_CHECKIN"
-        longest_checkin = redis_client.get(longest_checkin_key)
-        if longest_checkin is None:
-            longest_checkin = 0
-        else:
-            longest_checkin = int(longest_checkin)
-
-        # 获取今天是否可以签到
-        today_checkin = False
-
-        today = datetime.utcnow().date()
-        last_checkin_date = player_data.get('last_checkin_date')
-        
-        if last_checkin_date:
-            last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
-            
-            if last_checkin_date == today:
-                # 如果上次签到是今天，返回已经签到的信息
-                today_checkin = True
-
-        player_data = db.players.find_one({"name": player_name}, {"consecutive_checkins": 1})
-        if not player_data:
-            return 0  # No record found, return 0
-        consecutive_checkin_days =  player_data.get('consecutive_checkins', 0)
-        
         return {
             "can_claim": type2_can_claim,
             "claimed": type2_claimed,
-            "progress": longest_checkin,
+            "progress": player.longest_checkin,
             "today_checkin": today_checkin,
-            "consecutive_checkin_days": consecutive_checkin_days
+            "consecutive_checkin_days": consecutive_checkins
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -613,6 +557,7 @@ async def handle_farming_task(request: LoginRequest):
     """
     Creates or updates a farming task for a player, setting rewards with an expiration.
     """
+    player = Player(player_name=player_name)
     player_name = request.player_name
     farming_key = f"{player_name}_FARMING"
     task_id = "2001"
@@ -689,7 +634,7 @@ async def replace_player_card_with_random(player_name: str, request: ReplaceCard
     - **request**: Contains the index of the card to be replaced.
     """
     player = Player(player_name=player_name)
-    player_hand = player.player_hand
+    player_hand = player.hand
     if player_hand is None:
         raise HTTPException(status_code=404, detail="Player not found in the current game.")
 

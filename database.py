@@ -28,7 +28,7 @@ load_dotenv()  # Load environment variables from .env file
 CONNECTION_STRING = os.getenv('MONGODB_URI')
 
 # Create a MongoDB client
-mongo_client = AsyncIOMotorClient(CONNECTION_STRING)
+mongo_client = MongoClient(CONNECTION_STRING)
 redis_client = redis.Redis(host='localhost', port=6379, db=0, max_connections=50)
 db = mongo_client.balaton
 # document_models = load_beanie_document_models('your_application.models')

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from websocket_manager import websocket_manager
 from database import db, redis_client
 from routers.admin import admin
 from routers.items import items
@@ -19,12 +20,12 @@ from beanie import init_beanie
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
     """Initialize application services."""
-    await init_beanie(database=db, document_models=["Player"])
+    websocket_manager.start_broadcasting()
     print("Startup complete")
     yield
     print("Shutdown complete")
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # Add CORS middleware configuration
 app.add_middleware(

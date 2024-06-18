@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Union
 from beanie import Document
 from database import redis_client
+import asyncio
 
 class GameInfo(BaseModel):
     game_id: str = Field(..., example="game123", description="Unique identifier for the current game")
@@ -20,11 +21,21 @@ class PlayerGameInfo(GameInfo):
     player_reward: int = Field(..., example=150, description="Reward amount for the player")
     player_rank: int = Field(..., example=1, description="Rank of the player in the game")
 
-class Game(GameInfo):
+class Game:
+    def __init__(self, game_id=None):
+        if game_id is None:
+            game_id = redis_client.get("CURRENT_GAME").decode('UTF-8')
+            if game_id is None:
+                raise ValueError("No current game available.")
+        self.game_id = game_id
+
+    @property
+    def id(self):
+        return self.game_id
 
     @classmethod
-    @property
-    def current_remain(cls) -> int:
+    async def current_remain(cls):
+        # Assuming this method returns the remaining time for the current game
         return redis_client.ttl("CURRENT_GAME")
 
     @classmethod
@@ -41,7 +52,6 @@ class Game(GameInfo):
     def pool_amount(self) -> int:
         pool_key = f"{self.game_id}_POOL"
         pool_amount = redis_client.get(pool_key)
-        print("executing",pool_amount)
         if pool_amount is None:
             pool_amount = 0
         return int(pool_amount)
@@ -68,11 +78,96 @@ class Game(GameInfo):
             "game_time": Game.current_remain
         }
 
-
     @classmethod
     async def by_id(cls, game_id: str) -> Optional["Game"]:
         """Get a user by email."""
         return await cls.find_one(cls.game_id == game_id)
+    
+    # @classmethod
+    # async def getEndedGameInfo(cls, game_id: str) -> Optional["Game"]:
+    #     """Get a user by email."""
+    #     game_id = redis_client.get("LAST_GAME").decode('utf-8')
+    #     player_name = request.player_name
+
+    #     # 获取荷官手牌
+    #     dealer_key = f"{game_id}_DEALER"
+    #     dealer_hand = redis_client.get(dealer_key)
+    #     if not dealer_hand:
+    #         raise HTTPException(status_code=404, detail="Game ID not found or dealer hand not set")
+    #     dealer_hand = dealer_hand.decode('utf-8')
+    #     print(dealer_hand)
+
+    #     # 获取玩家手牌
+    #     hands_key = f"{game_id}_HANDS"
+    #     player_hand = redis_client.hget(hands_key, player_name)
+    #     if not player_hand:
+    #         raise HTTPException(status_code=404, detail="Player not found in the specified game")
+    #     player_hand = player_hand.decode('utf-8')
+
+    #     # 获取玩家最佳手牌和得分
+    #     scores_key = f"{game_id}_SCORES"
+    #     player_score = redis_client.zscore(scores_key, player_name)
+    #     if player_score is None:
+    #         raise HTTPException(status_code=404, detail="Player score not found")
+        
+    #     # 获取玩家手牌
+    #     best_hands_key = f"{game_id}_BEST_HANDS"
+    #     player_best_hand = redis_client.hget(best_hands_key, player_name)
+    #     if not player_hand:
+    #         raise HTTPException(status_code=404, detail="Player not found in the specified game")
+    #     player_best_hand = player_best_hand.decode('utf-8')
+
+    #     # 获取玩家奖励
+    #     rewards_key = f"{game_id}_REWARDS"
+    #     player_reward = int(redis_client.zscore(rewards_key, player_name))
+    #     if player_reward is None:
+    #         player_reward = 0  # If no reward found, default to 0
+
+    #     # 获取玩家排名
+    #     player_rank = redis_client.zrevrank(scores_key, player_name)
+    #     if player_rank is None:
+    #         raise HTTPException(status_code=404, detail="Player rank not found")
+
+    #     # 获取奖池总金额
+    #     pool_key = f"{game_id}_POOL"
+    #     pool_amount = redis_client.get(pool_key)
+    #     if pool_amount is None:
+    #         pool_amount = 0
+    #     else:
+    #         pool_amount = int(pool_amount)
+
+    #     # 获取所有玩家人数
+    #     player_count = redis_client.get(f"{game_id}_COUNT")
+    #     if player_count is None:
+    #         player_count = 0
+    #     else:
+    #         player_count = int(player_count)
+
+    #     # 构造返回的JSON数据
+    #     game_info = GameInfoResponse(
+    #         game_id=game_id,
+    #         dealer_hand=dealer_hand,
+    #         player_hand=player_hand,
+    #         player_best_hand=player_best_hand,  # Assuming best hand is the player's hand itself
+    #         player_score=player_score,
+    #         player_reward=player_reward,
+    #         player_rank=player_rank,
+    #         pool_amount=pool_amount,
+    #         player_count=player_count
+    #     )
+    @classmethod
+    async def currentGameInfo(cls):
+        game_id = redis_client.get("CURRENT_GAME")
+        if game_id is not None:
+            game_id = game_id.decode('utf-8')  # Convert bytes to string
+            game = cls(game_id=game_id)
+            return {
+                "game_id": game.game_id,
+                "pool_amount": game.pool_amount,
+                "player_amount": game.players_amount,
+                "game_time": await cls.current_remain()
+            }
+        await asyncio.sleep(0.2)  # Wait for 0.5 seconds before retrying
 
 # class PlayerGame(PlayerGameInfo, Document):
 #     @property

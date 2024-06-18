@@ -287,7 +287,7 @@ def check_login_method(data_parts):
     if 'user' in data_parts and isinstance(data_parts['user'], dict) and 'id' in data_parts['user'] and 'hash' in data_parts:
         return 1  # 类型 1
     # 检查是否同时存在'player_name'和'msg_id'字段
-    elif 'player_name' in data_parts and 'msg_id' in data_parts:
+    elif 'user_id' in data_parts and 'username' in data_parts and 'msg_id' in data_parts:
         return 2  # 类型 2
     # 如果上述条件都不满足，返回类型 0
     return 0  # 类型 0
