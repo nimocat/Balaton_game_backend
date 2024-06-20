@@ -25,6 +25,7 @@
         <p id="player-amount">Player Amount: <span></span></p>
         <p id="game-time">Game Time: <span></span></p>
     </div>
+    <button id="enter-game">Enter Game as JohnDoe</button>
     <h1>Recent Log Entries</h1>
     <div class="log-container">
         {% for line in logs %}
@@ -34,36 +35,69 @@
         {% endfor %}
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var entries = document.querySelectorAll('.log-entry');
-            entries.forEach(function(entry) {
-                if (entry.textContent.includes('game_logic')) {
-                    entry.classList.add('highlight');
-                }
-            });
+document.addEventListener("DOMContentLoaded", function() {
+    var entries = document.querySelectorAll('.log-entry');
+    entries.forEach(function(entry) {
+        if (entry.textContent.includes('game_logic')) {
+            entry.classList.add('highlight');
+        }
+    });
 
-            // Establish WebSocket connection using wss:// protocol
-            var ws = new WebSocket('wss://api.balaton.bet/ws/gameinfo');
-            ws.onopen = function() {
-                console.log('WebSocket connection established');
-                setInterval(function() {
-                    ws.send('request_gameinfo');  // Request game info every 1 second
-                }, 1000);
-            };
-            ws.onmessage = function(event) {
-                var gameInfo = JSON.parse(event.data);
-                document.querySelector('#game-id span').textContent = gameInfo.game_id;
-                document.querySelector('#pool-amount span').textContent = gameInfo.pool_amount;
-                document.querySelector('#player-amount span').textContent = gameInfo.player_amount;
-                document.querySelector('#game-time span').textContent = gameInfo.game_time;
-            };
-            ws.onclose = function() {
-                console.log('WebSocket connection closed');
-            };
-            ws.onerror = function(error) {
-                console.error('WebSocket error:', error);
-            };
-        });
+    var ws = new WebSocket('wss://api.balaton.bet/ws/game');
+    ws.onopen = function() {
+        console.log('WebSocket connection established');
+    };
+    ws.onmessage = function(event) {
+        console.log('Message from server ', event.data);
+        const response = JSON.parse(event.data);
+        switch (response.type) {
+            case 'game_info':
+                console.log('Received:', response.type);
+                displayGameInfo(response.data);
+                break;
+            case 'notification':
+                displayNotification(response.data);
+                break;
+            case 'success':
+                console.log('Success:', response.data);
+                break;
+            case 'ended_game_info':
+                console.log('Game Ended:', response.data);
+                displayGameInfo(response.data);  // Reuse displayGameInfo if it fits the data structure
+                break;
+            default:
+                console.log('Unknown message type:', response.type);
+        }
+    };
+    ws.onclose = function() {
+        console.log('WebSocket connection closed');
+    };
+    ws.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+
+    document.getElementById('enter-game').addEventListener('click', function() {
+        const entranceData = {
+            type: "entrance",
+            data: {
+                player_name: "JohnDoe",
+                payment: 40
+            }
+        };
+        ws.send(JSON.stringify(entranceData));
+    });
+
+    function displayGameInfo(info) {
+        document.querySelector('#game-id span').textContent = info.game_id;
+        document.querySelector('#pool-amount span').textContent = info.pool_amount;
+        document.querySelector('#player-amount span').textContent = info.player_amount;
+        document.querySelector('#game-time span').textContent = info.game_time;
+    }
+
+    function displayNotification(notification) {
+        console.log('Notification:', notification);
+    }
+});
     </script>
 </body>
 </html>

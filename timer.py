@@ -1,8 +1,10 @@
 import asyncio
+import json
 import threading
 import time
 import random
 import aioredis
+from models.game import Game
 from utils.pre_loads import load_data_from_files
 from websocket_manager import websocket_manager
 import redis
@@ -62,6 +64,7 @@ async def start_new_game(redis_client):
 
 # 游戏引擎-单例执行
 async def game_execution():
+    print('game executing')
     # 获取CURRENT_GAME，拼接DEALER作为key，字符串存储荷官的五张手牌存储进入Redis
     current_game_id = redis_client.get(LAST_GAME)
     if current_game_id is None:
@@ -150,6 +153,23 @@ async def game_execution():
         player_reward = float(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score} and reward {player_reward}")
 
+async def broadcast_game_result():
+    print(f"[Results Boradcasting] {websocket_manager.game_websockets}")
+
+    game_id = redis_client.get("LAST_GAME").decode('utf-8')
+    sockets_key = f"{game_id}_SOCKETS"
+    all_sockets = redis_client.hgetall(sockets_key)
+    
+    for socket_id, player_name in all_sockets.items():
+        player_name = player_name.decode('utf-8')
+        game_info_response = await Game.getEndedGameInfo(game_id, player_name)
+        data = {"type": "ended_game_info", "data": game_info_response}
+        # Retrieve the websocket using the socket_id
+        websocket = websocket_manager.game_websockets.get(int(socket_id))
+        if websocket:
+            print(f"[Boradcasting] Broadcast to Player {player_name} with Socket ID {socket_id}")
+            await websocket.send_text(json.dumps(data))
+
 async def countdown_expiry_listener(redis):
     pubsub = redis.pubsub()
     await pubsub.psubscribe("__keyevent@0__:expired")
@@ -162,6 +182,7 @@ async def countdown_expiry_listener(redis):
                 threading.Thread(target=add_task_to_can_claim, args=(player_name, 301)).start()
             if data == "CURRENT_GAME":
                 await game_execution()
+                await broadcast_game_result()
                 await start_new_game(redis)
 
     await pubsub.close()

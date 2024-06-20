@@ -2,6 +2,7 @@ from models.game import Game
 import asyncio
 from starlette.websockets import WebSocketState
 import asyncio
+from database import redis_client
 from models.game import Game
 import json
 
@@ -15,6 +16,22 @@ class WebSocketManager:
         if game_info:
             await websocket.send_text(json.dumps(game_info))  # Serialize to JSON string
         self.active_websockets[id(websocket)] = websocket
+
+    async def add_websocket_to_game(self, websocket, player_name) -> bool:
+        """Add a WebSocket to the game-specific list if it is already active and update game_websockets."""
+        try:
+            websocket_id = id(websocket)
+            if websocket_id in self.active_websockets:
+                current_game_id = redis_client.get("CURRENT_GAME").decode('utf-8')
+                sockets_key = f"{current_game_id}_SOCKETS"
+                redis_client.hset(sockets_key, websocket_id, player_name)
+                self.game_websockets[websocket_id] = websocket
+                print(f"[Enter Game] Player {player_name} with Socket ID {websocket_id} recorded")
+                print(f"[Game Sockets] {self.game_websockets}")
+            return True
+        except Exception as e:
+            print(f"Error adding websocket to game: {e}")
+            return False
 
     async def broadcast(self, message: str, game_only=False):
         target_websockets = self.game_websockets if game_only else self.active_websockets
@@ -38,15 +55,17 @@ class WebSocketManager:
         if websocket_id in self.active_websockets:
             del self.active_websockets[websocket_id]
         if websocket_id in self.game_websockets:
+            print('game socket has been deleted')
             del self.game_websockets[websocket_id]
 
     async def broadcast_game_info_every_5_seconds(self):
         while True:
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
             game_info = await Game.currentGameInfo()  # Ensure you await the method
             if game_info:
-                print("Broadcasting game info")
-                await self.broadcast(json.dumps(game_info), game_only=True)  # Serialize to JSON string
+                wrapped_message = json.dumps({"type": "game_info", "data": game_info})
+
+                await self.broadcast(wrapped_message, game_only=False)  # Serialize to JSON string
 
     def start_broadcasting(self):
         asyncio.create_task(self.broadcast_game_info_every_5_seconds())
