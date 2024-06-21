@@ -55,7 +55,7 @@ async def websocket_gameinfo(websocket: WebSocket):
                         print("entering game", player_name, payment)
                         cards = player_entrance(player_name, card_num)
                         if await websocket_manager.add_websocket_to_game(websocket, player_name):
-                            await websocket.send_text(json.dumps({"type": "success", "data": {"cards": cards}}))
+                            await websocket.send_text(json.dumps({"type": "entrance_success", "data": {"cards": cards}}))
                     case "disconnect":
                         break
 

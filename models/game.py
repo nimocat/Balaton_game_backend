@@ -117,8 +117,6 @@ class Game:
     @classmethod
     async def getEndedGameInfo(cls, game_id: str, player_name: str) -> Optional["Game"]:
         """Get a user by email."""
-        game_id = redis_client.get("LAST_GAME").decode('utf-8')
-
         # 获取荷官手牌
         dealer_key = f"{game_id}_DEALER"
         dealer_hand = redis_client.get(dealer_key)
@@ -185,6 +183,8 @@ class Game:
             pool_amount=pool_amount,
             player_count=player_count
         )
+        
+        return game_info
 
     @classmethod
     async def currentGameInfo(cls):

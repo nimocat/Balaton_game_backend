@@ -25,7 +25,7 @@ SALT = int(os.getenv('SALT'))
 ALPHANUMERIC_SET = string.ascii_letters + string.digits  # 62 characters
 
 def generate_hand(poker_num):
-    deck = [suit + rank for suit in suits for rank in ranks] + jokers
+    deck = [suit + rank for suit in suits for rank in ranks]
     random.shuffle(deck)
     return deck[:poker_num]
 
@@ -61,7 +61,9 @@ def calculate_score(hand):
         for replacements in unique_replacements:
             new_hand = replace_jokers(hand, replacements)
             rank_counts, _ = get_rank_counts(new_hand)
-            possible_scores.append(calculate_score_without_joker(rank_counts, new_hand))
+            score = calculate_score_without_joker(rank_counts, new_hand)
+            print(score)
+            possible_scores.append(score)
     else:
         possible_scores.append(calculate_score_without_joker(rank_counts, hand))
 
@@ -143,7 +145,7 @@ def calculate_reward(current_game_id):
     # 奖池中的50%奖励前10%的玩家
     top_10_percent_reward = prize_pool * 0.5 / top_10_percent_index if top_10_percent_index > 0 else 0
 
-    # 奖池中35%的奖励前10%-25%的玩家
+    # 奖池中35%的奖励前10%-35%的玩家
     top_10_to_25_percent_reward = prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index) if top_25_percent_index > top_10_percent_index else 0
 
     for i, (player, score) in enumerate(player_scores):

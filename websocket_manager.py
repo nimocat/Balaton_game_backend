@@ -1,3 +1,4 @@
+import aioredis
 from models.game import Game
 import asyncio
 from starlette.websockets import WebSocketState
@@ -64,11 +65,46 @@ class WebSocketManager:
             game_info = await Game.currentGameInfo()  # Ensure you await the method
             if game_info:
                 wrapped_message = json.dumps({"type": "game_info", "data": game_info})
-
                 await self.broadcast(wrapped_message, game_only=False)  # Serialize to JSON string
 
     def start_broadcasting(self):
         asyncio.create_task(self.broadcast_game_info_every_5_seconds())
+        asyncio.create_task(self.subscribe_and_broadcast_game_result())
 
+    async def subscribe_and_broadcast_game_result(self):
+        try:
+            redis = await aioredis.from_url("redis://localhost", encoding="utf-8", decode_responses=True)
+            pubsub = redis.pubsub()
+            await pubsub.subscribe('endgameinfo')
+            print("[Subscribed] Listening to 'endgameinfo' channel for game results.")
+
+            async for message in pubsub.listen():
+                if message['type'] == 'message':
+                    game_id = message['data']
+                    print(f"[Results Broadcasting] Game ID received: {game_id}")
+
+                    sockets_key = f"{game_id}_SOCKETS"
+                    all_sockets = await redis.hgetall(sockets_key)
+
+                    for socket_id, player_name in all_sockets.items():
+                        try:
+                            game_info_response = await Game.getEndedGameInfo(game_id, player_name)
+                            data = {"type": "ended_game_info", "data": game_info_response.dict()}
+                            print("game_websockets contents:", self.game_websockets)
+                            print("active_websockets contents:", self.active_websockets)
+                            websocket = self.game_websockets.pop(int(socket_id), None)
+                            if websocket:
+                                print(f"[Broadcasting] Broadcast to Player {player_name} with Socket ID {socket_id}")
+                                await websocket.send_text(json.dumps(data))
+                        except Exception as e:
+                            print(f"Failed to fetch or send game info for {player_name} with Socket ID {socket_id}: {e}")
+        except Exception as e:
+            print(f"Error in subscribe_and_broadcast_game_result: {str(e)}")
+
+    # async def start_broadcasting(self):
+    #     # await self.broadcast_game_info_every_1_seconds()
+    #     asyncio.create_task(self.broadcast_game_info_every_1_seconds())
+    # async def start_websocket_manager(self):
+    #     asyncio.create_task(self.start_broadcasting())
 # Create a global WebSocket manager instance
 websocket_manager = WebSocketManager()

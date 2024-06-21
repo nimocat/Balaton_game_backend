@@ -151,24 +151,6 @@ async def game_execution():
         player_reward = float(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score} and reward {player_reward}")
 
-# async def broadcast_game_result():
-#     print(f"[Results Boradcasting] {websocket_manager.current_game_websockets}")
-
-#     game_id = redis_client.get("LAST_GAME").decode('utf-8')
-#     sockets_key = f"{game_id}_SOCKETS"
-#     all_sockets = redis_client.hgetall(sockets_key)
-    
-#     for socket_id, player_name in all_sockets.items():
-#         print(f"socket_id: {socket_id}, player_name: {player_name}")
-#         player_name = player_name.decode('utf-8')
-#         game_info_response = await Game.getEndedGameInfo(game_id, player_name)
-#         data = {"type": "ended_game_info", "data": game_info_response}
-#         # Retrieve the websocket using the socket_id
-#         websocket = websocket_manager.current_game_websockets.get(socket_id)
-#         if websocket:
-#             print(f"[Boradcasting] Broadcast to Player {player_name} with Socket ID {socket_id}")
-#             await websocket.send_text(json.dumps(data))
-
 async def countdown_expiry_listener(redis):
     pubsub = redis.pubsub()
     await pubsub.psubscribe("__keyevent@0__:expired")

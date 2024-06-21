@@ -64,10 +64,6 @@ document.addEventListener("DOMContentLoaded", function() {
             case 'success':
                 console.log('Success:', response.data);
                 break;
-            case 'ended_game_info':
-                console.log('Game Ended:', response.data);
-                displayGameInfo(response.data);  // Reuse displayGameInfo if it fits the data structure
-                break;
             default:
                 console.log('Unknown message type:', response.type);
         }
