@@ -6,7 +6,6 @@ import random
 import aioredis
 from models.game import Game
 from utils.pre_loads import load_data_from_files
-from websocket_manager import websocket_manager
 import redis
 import math
 import threading
@@ -76,7 +75,7 @@ async def game_execution():
     dealer_key = f"{current_game_id}_DEALER"
     dealer_hand = redis_client.get(dealer_key).decode('utf-8')
     dealer_hand_str = str(dealer_hand)  # 将手牌转换为字符串存储
-    await websocket_manager.broadcast(dealer_hand_str, game_only=True)  # Serialize to JSON string
+    # await websocket_manager.broadcast(dealer_hand_str, game_only=True)  # Serialize to JSON string
     logger.info(f"Dealer's hand {dealer_hand_str} string")
     # 设置荷官手牌过期时间
     redis_client.expire(dealer_key, 60 * 5)
@@ -97,23 +96,22 @@ async def game_execution():
         print(player_name, hand)
         player_score = int(redis_client.zscore(scores_key, player_name.decode('utf-8')))
         player_scores.append((player_name.decode('utf-8'), player_score))
-        logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score}")
     
     # 计算奖励
     player_scores.sort(key=lambda x: x[1], reverse=True)  # 按分数从高到低排序
     num_players = len(player_scores)
     top_10_percent_index = max(1, math.floor(num_players * 0.1))
-    top_25_percent_index = max(1, math.floor(num_players * 0.25))
+    top_35_percent_index = max(1, math.floor(num_players * 0.35))
     prize_pool = int(redis_client.get(f"{current_game_id}_POOL") or 0)
     # 计算出奖励
     top_10_percent_reward = float(prize_pool * 0.5 / top_10_percent_index) if top_10_percent_index > 0 else 0
-    top_10_to_25_percent_reward = float(prize_pool * 0.35 / (top_25_percent_index - top_10_percent_index)) if top_25_percent_index > top_10_percent_index else 0
+    top_10_to_25_percent_reward = float(prize_pool * 0.35 / (top_35_percent_index - top_10_percent_index)) if top_35_percent_index > top_10_percent_index else 0
 
     rewards = {}
     for i, (player_name, player_score) in enumerate(player_scores):
         if i < top_10_percent_index:
             rewards[player_name] = round(top_10_percent_reward, 2)
-        elif i < top_25_percent_index:
+        elif i < top_35_percent_index:
             rewards[player_name] = round(top_10_to_25_percent_reward, 2)
         else:
             rewards[player_name] = 0
@@ -153,22 +151,23 @@ async def game_execution():
         player_reward = float(redis_client.zscore(rewards_key, player_name.decode('utf-8')))
         logger.info(f"Player {player_name.decode('utf-8')}'s best hand {player_hand} with score {player_score} and reward {player_reward}")
 
-async def broadcast_game_result():
-    print(f"[Results Boradcasting] {websocket_manager.game_websockets}")
+# async def broadcast_game_result():
+#     print(f"[Results Boradcasting] {websocket_manager.current_game_websockets}")
 
-    game_id = redis_client.get("LAST_GAME").decode('utf-8')
-    sockets_key = f"{game_id}_SOCKETS"
-    all_sockets = redis_client.hgetall(sockets_key)
+#     game_id = redis_client.get("LAST_GAME").decode('utf-8')
+#     sockets_key = f"{game_id}_SOCKETS"
+#     all_sockets = redis_client.hgetall(sockets_key)
     
-    for socket_id, player_name in all_sockets.items():
-        player_name = player_name.decode('utf-8')
-        game_info_response = await Game.getEndedGameInfo(game_id, player_name)
-        data = {"type": "ended_game_info", "data": game_info_response}
-        # Retrieve the websocket using the socket_id
-        websocket = websocket_manager.game_websockets.get(int(socket_id))
-        if websocket:
-            print(f"[Boradcasting] Broadcast to Player {player_name} with Socket ID {socket_id}")
-            await websocket.send_text(json.dumps(data))
+#     for socket_id, player_name in all_sockets.items():
+#         print(f"socket_id: {socket_id}, player_name: {player_name}")
+#         player_name = player_name.decode('utf-8')
+#         game_info_response = await Game.getEndedGameInfo(game_id, player_name)
+#         data = {"type": "ended_game_info", "data": game_info_response}
+#         # Retrieve the websocket using the socket_id
+#         websocket = websocket_manager.current_game_websockets.get(socket_id)
+#         if websocket:
+#             print(f"[Boradcasting] Broadcast to Player {player_name} with Socket ID {socket_id}")
+#             await websocket.send_text(json.dumps(data))
 
 async def countdown_expiry_listener(redis):
     pubsub = redis.pubsub()
@@ -182,7 +181,8 @@ async def countdown_expiry_listener(redis):
                 threading.Thread(target=add_task_to_can_claim, args=(player_name, 301)).start()
             if data == "CURRENT_GAME":
                 await game_execution()
-                await broadcast_game_result()
+                last_game_id = redis_client.get("LAST_GAME").decode('utf-8')
+                await redis.publish('endgameinfo', last_game_id)
                 await start_new_game(redis)
 
     await pubsub.close()
@@ -195,7 +195,6 @@ def add_task_to_can_claim(player_name: str, task_id: int):
 async def main():
     # Create an asynchronous Redis connection
     redis = await aioredis.from_url("redis://localhost", encoding="utf-8", decode_responses=True)
-
     # Use the asynchronous Redis client for getting the current game
     current_game = await redis.get("CURRENT_GAME")
     if current_game is None:

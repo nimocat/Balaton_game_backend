@@ -55,6 +55,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.log('Received:', response.type);
                 displayGameInfo(response.data);
                 break;
+            case 'test_info':
+                console.log('Received:', response.type, response.data);
+                break;
             case 'notification':
                 displayNotification(response.data);
                 break;

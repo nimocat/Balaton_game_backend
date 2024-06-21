@@ -684,7 +684,7 @@ def fetch_claim_tasks(player_name: str, task_type: Optional[int] = None, claim_t
     """
     # Fetch all task IDs from CANCLAIM
     tasks = redis_client.smembers(f"{player_name}_{claim_type}")
-    print(f"tasks in {tasks}")
+    print(f"[Tasks] Task in claim list: {tasks}")
     if task_type is not None:
         # Fetch task IDs of the specified type
         type_tasks = redis_client.smembers(f"task_type:{task_type}")

@@ -24,8 +24,8 @@ def handle_invite_login(invitee: str, inviter: str):
     existing_invitee = invitee_collection.find_one({"name": invitee})
 
     if existing_invitee:
-        return {"message": "Invitee already exists in the database", "status_code": 404}
-
+        return {"message": "Invitee already has an inviter", "status_code": 404}
+    
     player_hook.login_hook(invitee)
     send_rewards(player_name=inviter, task_id=4002, commission=True) # 递归奖励
     send_rewards(player_name=invitee, task_id=4001) # 不递归奖励
@@ -46,7 +46,7 @@ def handle_invite_login(invitee: str, inviter: str):
     # 将 Redis 数据持久化到 MongoDB 中
     update_player_tokens_to_mongo(inviter)
     update_player_tokens_to_mongo(invitee)
-
+    print(f"{inviter} invited {invitee}")
     return {"message": "success", "status": 200}
 
 def handle_regular_login(player_name: str):
@@ -253,24 +253,24 @@ async def user_login(request: LoginRequest):
     return JSONResponse(content=load_player_tokens(player_name))
 
 @router.post("/login", summary='Handle both regular and invite login', tags=['Player'])
-async def unified_login(request: LoginRequest): # , token_data: dict = Depends(verify_balaton_access_token)
+async def unified_login(request: LoginRequest, token_data: dict = Depends(verify_balaton_access_token)): # 
     """
     Handle both regular and invite login based on the presence of 'start_param' in the token.
     """
     player_name = request.player_name
 
-    # login_type = check_login_method(token_data)
-    # if login_type == 1:
-    #     start_param = token_data.get('start_param')
-    #     if start_param:
-    #     # Invite login logic
-    #         inviter = get_uid_by_inv_code(start_param)
-    #         return handle_invite_login(player_name, inviter)
-    # elif login_type == 2:
-    #     player_name = token_data.get('user_id')
-    #     inline_message_id = token_data.get('msg_id')
-    #     inviter = redis_client.get(inline_message_id)
-    #     return handle_invite_login(player_name, inviter)
+    login_type = check_login_method(token_data)
+    if login_type == 1:
+        start_param = token_data.get('start_param')
+        if start_param:
+        # Invite login logic
+            inviter = get_uid_by_inv_code(start_param)
+            return handle_invite_login(player_name, inviter)
+    elif login_type == 2:
+        player_name = token_data.get('user_id')
+        inline_message_id = token_data.get('msg_id')
+        inviter = redis_client.hget("MSGID_IDMAP", inline_message_id)
+        return handle_invite_login(player_name, inviter)
     
     return handle_regular_login(player_name)
 
@@ -284,17 +284,18 @@ async def daily_checkin(request: LoginRequest):
 
     today = datetime.utcnow().date()
     last_checkin_date = player_data.get('last_checkin_date')
-    
+    print("today")
+
     if last_checkin_date:
-        # last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
+        last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
         
-        # if last_checkin_date == today:
-        #     # 如果上次签到是今天，返回已经签到的信息
-        #     return {"message": "Already checked in today."}
-        # elif last_checkin_date == today - timedelta(days=1):
-        new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
-        # else:
-        #     new_consecutive_checkins = 1
+        if last_checkin_date == today:
+            # 如果上次签到是今天，返回已经签到的信息
+            return {"message": "Already checked in today."}
+        elif last_checkin_date == today - timedelta(days=1):
+            new_consecutive_checkins = player_data.get('consecutive_checkins', 0) + 1
+        else:
+            new_consecutive_checkins = 1
     else:
         new_consecutive_checkins = 1
     
@@ -307,9 +308,10 @@ async def daily_checkin(request: LoginRequest):
 
     # update可以claim的checkin任务
     update_can_claim_tasks(player_name=player_name, task_type=2)
+    checkpoint = new_consecutive_checkins % 7
     # Retrieve check-in rewards based on the type '1' and the number of consecutive check-ins
     # 结算当前checkin的奖励(task_type为1，结算类型为0，立刻结算)
-    settle_rewards(player_name=player_name, checkpoint=new_consecutive_checkins, task_type=1)
+    settle_rewards(player_name=player_name, checkpoint=checkpoint, task_type=1)
 
     # Update MongoDB
     db.players.update_one(
@@ -334,7 +336,7 @@ async def get_consecutive_checkins(player_name: str):
     if not player_data:
         return 0  # No record found, return 0
     
-    return player_data.get('consecutive_checkins', 0)
+    return player_data.get('consecutive_checkins', 0)%7
 
 @router.post("/player_entrance", summary='Invoke once player is entering the game', tags=['Player'])
 async def player_entrance_route(request: EntranceRequest):
@@ -547,9 +549,10 @@ async def get_type2_tasks(player_name: str):
             "claimed": type2_claimed,
             "progress": player.longest_checkin,
             "today_checkin": player.checked_in(),
-            "consecutive_checkin_days": player.consecutive_checkins()
+            "consecutive_checkin_days": player.consecutive_checkins() % 7
         }
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/tasks/farming", response_model=FarmingResponse, summary="Handle farming tasks for a player", tags=['Task'])

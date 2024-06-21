@@ -85,7 +85,7 @@ def main():
             time.sleep(random.uniform(0.5, 2))  # Random sleep to simulate staggered requests
 
     threads = []
-    for _ in range(100):
+    for _ in range(5):
         t = threading.Thread(target=entrance_thread)
         t.start()
         threads.append(t)

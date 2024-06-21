@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from beanie import Document, Indexed
 from fastapi import logger
 from pydantic import BaseModel, Field
@@ -40,10 +40,9 @@ class Player(BaseModel):
     def checked_in(self) -> bool:
         player_data = self.player_data()
         today_checkin = False
-
         today = datetime.utcnow().date()
         last_checkin_date = player_data.get('last_checkin_date')
-        
+
         if last_checkin_date:
             last_checkin_date = datetime.strptime(last_checkin_date, '%Y-%m-%d').date()
             if last_checkin_date == today:
